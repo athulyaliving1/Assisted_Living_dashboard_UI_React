@@ -181,7 +181,7 @@ const handleStateChange = (e) => {
       // -----------------REVENUE PIE-CHART STATES --------------------------//
       const [chartBillinvoicebranchtotal, setChartbillinvoicebranchtotal] = useState([]);
       const [chartFbbranchtotal, setChartFbbranchtotal] = useState([]);
-      // const [chartPsbranchtotal, setChartPsbranchtotal] = useState([]);
+      const [chartPsbranchtotal, setChartPsbranchtotal] = useState([]);
       const [chartSesbranchtotal, setChartSesbranchtotal] = useState([]);
       const [chartMeqbranchtotal, setChartMeqbranchtotal] = useState([]);
 
@@ -279,13 +279,13 @@ const handleStateChange = (e) => {
   
           const chartData1 = chartbillInvoiceResponse.slice(1).map(data => ({ branch_name: data.branch_name, total_total_amount: data.total_total_amount }));
           const chartData2 = fbResponse.slice(1).map(data => ({ branch_name: data.branch_name, total_fb_amount: data.total_fb_amount }));
-          // const chartData3 = ProceduralServiceResponse.slice(1).map(data => ({ branch_name: data.branch_name, total_procedure_service_amount: data.total_procedure_service_amount }));
+          const chartData3 = ProceduralServiceResponse.slice(1).map(data => ({ branch_name: data.branch_name, total_procedure_service_amount: data.total_procedure_service_amount }));
           const chartData4 = ExtraServiceResponse.slice(1).map(data => ({ branch_name: data.branch_name, total_staff_extra_service_amount: data.total_staff_extra_service_amount }));
           const chartData5 = Eqresponse.slice(1).map(data => ({ branch_name: data.branch_name, total_medical_equipment_amount: data.total_medical_equipment_amount }));
   
           setChartbillinvoicebranchtotal(chartData1);
           setChartFbbranchtotal(chartData2);
-          // setChartPsbranchtotal(chartData3);
+          setChartPsbranchtotal(chartData3);
           setChartSesbranchtotal(chartData4);
           setChartMeqbranchtotal(chartData5);
           setselecttype('Revenue');
@@ -699,6 +699,7 @@ const handleStateChange = (e) => {
     const combineDataSources1 = () => {
       const consolidatedData1 = consolidateData(chartBillinvoicebranchtotal, item => item.total_total_amount);
       const consolidatedData2 = consolidateData(chartFbbranchtotal, item => item.total_fb_amount);
+      const consolidatedData3 = consolidateData(chartPsbranchtotal, item => item.total_procedure_service_amount);
       const consolidatedData4 = consolidateData(chartSesbranchtotal, item => item.total_staff_extra_service_amount);
       const consolidatedData5 = consolidateData(chartMeqbranchtotal, item => item.total_medical_equipment_amount);
 
@@ -709,6 +710,7 @@ const handleStateChange = (e) => {
           combinedData[branch_name] = (
             (Number(consolidatedData1[branch_name]) || 0) +
             (Number(consolidatedData2[branch_name]) || 0) +
+            (Number(consolidatedData3[branch_name]) || 0) +
             (Number(consolidatedData4[branch_name]) || 0) +
             (Number(consolidatedData5[branch_name]) || 0)
           );
@@ -821,8 +823,8 @@ const handleStateChange = (e) => {
     Kasavanahalli : "5",
     Hydrabad : "6",
     Kochi : "7",
-    Coimbature : "8",
-    Moduravoyal : "9"
+    Coimbatore : "8",
+    Maduravoyal : "9"
   }
 
     const options = {
@@ -866,6 +868,9 @@ const handleStateChange = (e) => {
 
 
 const [Psservice, setPsservice] = useState([]);
+const [Seservice, setSeservice] = useState([]);
+const [Psbranchdata, setPsbranchdata] = useState([{}]);
+const [Sesbranchdata, setSesbranchdata] = useState([{}]);
 
 const handleDataPointClick = async (branchID) => {
   setfirstbar(true);
@@ -899,11 +904,37 @@ const handleDataPointClick = async (branchID) => {
 
     const [ProceduralServiceResponse] = responses.map(response => response.data);
 
-    const chartData7 = ProceduralServiceResponse.slice(1).map(data => ({ service_type: data.service_type, total_procedure_service_amount: data.total_procedure_service_amount }));
+    const chartData7 = ProceduralServiceResponse.slice(1).map(data => ({ ps_service_type: data.service_type, total_procedure_service_amount: data.total_procedure_service_amount }));
     setPsservice(chartData7);
     console.log("procedrural service :",chartData7);
- 
-   
+
+
+    const extractAndFlattenData1 = (apiResponse) => {
+      return [].concat(...apiResponse.filter(item => item.data && item.data.length > 0).map(item => item.data));
+    };
+    setPsbranchdata(extractAndFlattenData1(ProceduralServiceResponse));
+    setselecttype('PcBranchData');
+  } catch (error) {
+    console.error('Error fetching data: ', error);
+  } 
+  try {
+    const apiEndpoints = [
+      `staff_extra_service?branch=${branchID}&start=${formattedFrom_Date}&end=${formattedTo_Date}`
+    ];
+
+    const responses = await Promise.all(apiEndpoints.map(endpoint => axios.post(`http://localhost:8080/${endpoint}`)));
+
+    const [ExtraServiceResponse] = responses.map(response => response.data);
+
+    const chartData8 = ExtraServiceResponse.slice(1).map(data => ({ ses_service_type: data.service_type, total_branch_staff_extra_amount: data.total_branch_staff_extra_amount }));
+    setSeservice(chartData8);
+    console.log("Staff Extra service :",chartData8);
+
+    const extractAndFlattenData1 = (apiResponse) => {
+      return [].concat(...apiResponse.filter(item => item.data && item.data.length > 0).map(item => item.data));
+    };
+    setSesbranchdata(extractAndFlattenData1(ExtraServiceResponse));
+    setselecttype('SesBranchData');
   } catch (error) {
     console.error('Error fetching data: ', error);
   } finally {
@@ -912,6 +943,8 @@ const handleDataPointClick = async (branchID) => {
   }
 
 };
+
+
    // -----------------BAR-CHART --------------------------//
    const addSymbols = (e) => {
     var suffixes = ["", "K", "M", "B"];
@@ -921,12 +954,18 @@ const handleDataPointClick = async (branchID) => {
     return CanvasJS.formatNumber(e.value / Math.pow(1000, order)) + suffix;
   };
   
-  const dataPoints = Psservice.map(item => ({
+  // Creating data points for Psservice and Seservice
+  const dataPointsPsservice = Psservice.map(item => ({
     y: parseFloat(item.total_procedure_service_amount), // Ensure the value is parsed as a float
-    label: item.service_type
+    label: item.ps_service_type
   }));
   
+  const dataPointsSeservice = Seservice.map(item => ({
+    y: parseFloat(item.total_branch_staff_extra_amount), // Ensure the value is parsed as a float
+    label: item.ses_service_type
+  }));
   
+  // Configuring the options for the chart
   const options = {
     animationEnabled: true,
     theme: "light2",
@@ -945,10 +984,25 @@ const handleDataPointClick = async (branchID) => {
     data: [
       {
         type: "bar",
-        dataPoints: dataPoints,
+        dataPoints: dataPointsPsservice, // Adding data points for Psservice
+        click: () => {
+          const data = Psbranchdata;
+          console.log("branchdata", data);
+          setselecttype('PcBranchData');
+        }
       },
+      {
+        type: "bar",
+        dataPoints: dataPointsSeservice, // Adding data points for Seservice
+        click: () => {
+          const data = Sesbranchdata; // You might want to modify this line based on your requirements
+          console.log("branchdata", data);
+          setselecttype('SesBranchData');
+        }
+      }
     ],
   };
+  
   
   
 
@@ -1584,6 +1638,362 @@ const handleDataPointClick = async (branchID) => {
        );
      };
 
+
+       // ----------------- TABLE 5 STATES --------------------------// 
+
+  const [currentPage5, setCurrentPage5] = useState(1); // pagination state
+  const [rowsPerPage5, setRowsPerPage5] = useState(10); // row control state
+  const [selectedRows5, setSelectedRows5] = useState([]);
+  
+     // ----------------- TABLE 5 SCOLUMN --------------------------// 
+  const combinedColumns5 = [
+    {
+      name: 'Sno',
+      cell: (row, rowIndex) => {
+        const index = mergedData5.indexOf(row) + 1;
+        return index;
+      },
+      sortable: true,
+      width: '70px',
+    },    
+    {
+      name: 'Branch Name',
+      selector: 'branch_name',
+      sortable: true,
+    },
+    {
+      name: 'Patient ID',
+      selector: 'patient_id',
+      sortable: true,
+    },
+    {
+      name: 'First Name',
+      selector: 'first_name',
+      width:"150px",
+      sortable: true,
+    },
+    {
+      name: 'Last Name',
+      selector: 'last_name',
+      width:"150px",
+      sortable: true,
+    },
+    {
+      name: 'Invoice Date',
+      selector: 'invoice_date',
+      sortable: true,
+      cell: (row) => {
+        if (row.invoice_date) {
+          const originalDate = row.invoice_date; // Assuming invoice_date is a string in the format 'YYYY-MM-DD HH:mm:ss'
+          const formattedDate = new Date(originalDate).toLocaleDateString('en-IN');
+          return formattedDate;
+        } else if (row.schedule_date) {
+          const originalDate = row.schedule_date; // Assuming schedule_date is a string in the format 'YYYY-MM-DD HH:mm:ss'
+          const formattedDate = new Date(originalDate).toLocaleDateString('en-IN');
+          return formattedDate;
+        }
+        return ''; // Return empty string if neither invoice_date nor schedule_date exists
+      },
+    },    
+    {
+      name: 'Service Type',
+      selector: 'rental_type',
+      width:"150px",
+      sortable: true,
+      cell: (row) => {
+        if (row.rental_type) {
+          return <span>{row.rental_type}</span>;
+        } else if (row.procedure_service_name) {
+          return <span>{row.procedure_service_name}</span>;
+        }else if (row.item_name) {
+          return <span>{row.item_name}</span>;
+        } 
+        else if (row.service) {
+          return <span>{row.service}</span>;
+        }
+        else if (row.care_taken) {
+          return <span>{row.care_taken}</span>;
+        }
+        else {
+          return null; // You might want to handle the case when neither rental_type nor procedure_service_name is defined.
+        }
+      },
+    },      
+    {
+      name: 'Status',
+      selector: 'payment_status',
+      sortable: true,
+      cell: (row) => {
+      if (row.payment_status) {
+          return   <span
+          className={`${row.payment_status === 'Cancelled'
+            ? 'px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-400 text-red-100'
+            : row.payment_status === 'Paid'
+              ? 'px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800'
+            : row.payment_status === 'Pending'
+              ? 'px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800'
+            : row.payment_status === 'Billed'
+              ? 'px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-sky-100 text-sky-800'
+                : 'text-black' // Default color for other payment_status
+            }`}
+        >
+          {row.payment_status}
+        </span>
+        } else if (row.invoice_status) {
+          return  <span
+          className={`${row.invoice_status === 'Pending'
+              ? 'px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800'
+            : row.invoice_status === 'Billed'
+              ? 'px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-sky-100 text-sky-800'
+                : 'text-black' // Default color for other invoice_status
+            }`}
+        >
+          {row.invoice_status}
+        </span>
+        }
+      }
+    },
+    {
+      name: 'Amount',
+      selector: 'total_amount',
+      sortable: true,
+      width:"250px",
+      cell: (row) => {
+        if (row.fb_amount) {
+          return ` ${ new Intl.NumberFormat("en-IN", {
+        style: "currency",
+        currency: "INR",
+        maximumFractionDigits: 0
+      }).format(row.fb_amount)} (FB)`;
+        }
+        else if (row.procedure_service_amount) {
+          return ` ${new Intl.NumberFormat("en-IN", {
+        style: "currency",
+        currency: "INR",
+        maximumFractionDigits: 0
+      }).format(row.procedure_service_amount)} (PS)`;
+        }
+        else if (row.extra_service_amount) {
+          return ` ${new Intl.NumberFormat("en-IN", {
+        style: "currency",
+        currency: "INR",
+        maximumFractionDigits: 0
+      }).format(row.extra_service_amount)} (SES)`;
+        }
+        else if (row.medical_equipment_amount) {
+          return ` ${new Intl.NumberFormat("en-IN", {
+        style: "currency",
+        currency: "INR",
+        maximumFractionDigits: 0
+      }).format(row.medical_equipment_amount)} (MEQ)`;
+        }
+        else if (row.total_amount) {
+          return ` ${new Intl.NumberFormat("en-IN", {
+        style: "currency",
+        currency: "INR",
+        maximumFractionDigits: 0
+      }).format(row.total_amount)} (Bill Invoice)`;
+        }
+        else if (row.emergency_care_amount) {
+          return ` ${new Intl.NumberFormat("en-IN", {
+        style: "currency",
+        currency: "INR",
+        maximumFractionDigits: 0
+      }).format(row.emergency_care_amount)} (EC)`;
+        }
+        else if (row.personal_care_amount) {
+          return ` ${new Intl.NumberFormat("en-IN", {
+        style: "currency",
+        currency: "INR",
+        maximumFractionDigits: 0
+      }).format(row.personal_care_amount)} (PC)`;
+        }
+      },
+    },
+  ];
+  
+   // ----------------- TABLE 5 FIVE API MERGE DATA --------------------------// 
+
+  const mergedData5 = [...Psbranchdata];
+
+       // ----------------- TABLE 6 STATES --------------------------// 
+
+  const [currentPage6, setCurrentPage6] = useState(1); // pagination state
+  const [rowsPerPage6, setRowsPerPage6] = useState(10); // row control state
+  const [selectedRows6, setSelectedRows6] = useState([]);
+  
+     // ----------------- TABLE 5 SCOLUMN --------------------------// 
+  const combinedColumns6 = [
+    {
+      name: 'Sno',
+      cell: (row, rowIndex) => {
+        const index = mergedData6.indexOf(row) + 1;
+        return index;
+      },
+      sortable: true,
+      width: '70px',
+    },    
+    {
+      name: 'Branch Name',
+      selector: 'branch_name',
+      sortable: true,
+    },
+    {
+      name: 'Patient ID',
+      selector: 'patient_id',
+      sortable: true,
+    },
+    {
+      name: 'First Name',
+      selector: 'first_name',
+      width:"150px",
+      sortable: true,
+    },
+    {
+      name: 'Last Name',
+      selector: 'last_name',
+      width:"150px",
+      sortable: true,
+    },
+    {
+      name: 'Invoice Date',
+      selector: 'invoice_date',
+      sortable: true,
+      cell: (row) => {
+        if (row.invoice_date) {
+          const originalDate = row.invoice_date; // Assuming invoice_date is a string in the format 'YYYY-MM-DD HH:mm:ss'
+          const formattedDate = new Date(originalDate).toLocaleDateString('en-IN');
+          return formattedDate;
+        } else if (row.schedule_date) {
+          const originalDate = row.schedule_date; // Assuming schedule_date is a string in the format 'YYYY-MM-DD HH:mm:ss'
+          const formattedDate = new Date(originalDate).toLocaleDateString('en-IN');
+          return formattedDate;
+        }
+        return ''; // Return empty string if neither invoice_date nor schedule_date exists
+      },
+    },    
+    {
+      name: 'Service Type',
+      selector: 'rental_type',
+      width:"150px",
+      sortable: true,
+      cell: (row) => {
+        if (row.rental_type) {
+          return <span>{row.rental_type}</span>;
+        } else if (row.procedure_service_name) {
+          return <span>{row.procedure_service_name}</span>;
+        }else if (row.item_name) {
+          return <span>{row.item_name}</span>;
+        } 
+        else if (row.service) {
+          return <span>{row.service}</span>;
+        }
+        else if (row.care_taken) {
+          return <span>{row.care_taken}</span>;
+        }
+        else {
+          return null; // You might want to handle the case when neither rental_type nor procedure_service_name is defined.
+        }
+      },
+    },      
+    {
+      name: 'Status',
+      selector: 'payment_status',
+      sortable: true,
+      cell: (row) => {
+      if (row.payment_status) {
+          return   <span
+          className={`${row.payment_status === 'Cancelled'
+            ? 'px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-400 text-red-100'
+            : row.payment_status === 'Paid'
+              ? 'px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800'
+            : row.payment_status === 'Pending'
+              ? 'px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800'
+            : row.payment_status === 'Billed'
+              ? 'px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-sky-100 text-sky-800'
+                : 'text-black' // Default color for other payment_status
+            }`}
+        >
+          {row.payment_status}
+        </span>
+        } else if (row.invoice_status) {
+          return  <span
+          className={`${row.invoice_status === 'Pending'
+              ? 'px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800'
+            : row.invoice_status === 'Billed'
+              ? 'px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-sky-100 text-sky-800'
+                : 'text-black' // Default color for other invoice_status
+            }`}
+        >
+          {row.invoice_status}
+        </span>
+        }
+      }
+    },
+    {
+      name: 'Amount',
+      selector: 'total_amount',
+      sortable: true,
+      width:"250px",
+      cell: (row) => {
+        if (row.fb_amount) {
+          return ` ${ new Intl.NumberFormat("en-IN", {
+        style: "currency",
+        currency: "INR",
+        maximumFractionDigits: 0
+      }).format(row.fb_amount)} (FB)`;
+        }
+        else if (row.procedure_service_amount) {
+          return ` ${new Intl.NumberFormat("en-IN", {
+        style: "currency",
+        currency: "INR",
+        maximumFractionDigits: 0
+      }).format(row.procedure_service_amount)} (PS)`;
+        }
+        else if (row.extra_service_amount) {
+          return ` ${new Intl.NumberFormat("en-IN", {
+        style: "currency",
+        currency: "INR",
+        maximumFractionDigits: 0
+      }).format(row.extra_service_amount)} (SES)`;
+        }
+        else if (row.medical_equipment_amount) {
+          return ` ${new Intl.NumberFormat("en-IN", {
+        style: "currency",
+        currency: "INR",
+        maximumFractionDigits: 0
+      }).format(row.medical_equipment_amount)} (MEQ)`;
+        }
+        else if (row.total_amount) {
+          return ` ${new Intl.NumberFormat("en-IN", {
+        style: "currency",
+        currency: "INR",
+        maximumFractionDigits: 0
+      }).format(row.total_amount)} (Bill Invoice)`;
+        }
+        else if (row.emergency_care_amount) {
+          return ` ${new Intl.NumberFormat("en-IN", {
+        style: "currency",
+        currency: "INR",
+        maximumFractionDigits: 0
+      }).format(row.emergency_care_amount)} (EC)`;
+        }
+        else if (row.personal_care_amount) {
+          return ` ${new Intl.NumberFormat("en-IN", {
+        style: "currency",
+        currency: "INR",
+        maximumFractionDigits: 0
+      }).format(row.personal_care_amount)} (PC)`;
+        }
+      },
+    },
+  ];
+  
+   // ----------------- TABLE 5 FIVE API MERGE DATA --------------------------// 
+
+  const mergedData6 = [...Sesbranchdata];
+
+
   // ----------------- table header and body color --------------------------// 
     const tableCustomStyles = {
       headRow: {
@@ -1641,7 +2051,12 @@ const handleDataPointClick = async (branchID) => {
       tableContent = generateDataTable(combinedColumns3, mergedData3, currentPage3, setCurrentPage3, rowsPerPage3, setRowsPerPage3, selectedRows3, setSelectedRows3);
     } else if (selecttype === 'InvoiceReciept') {
       tableContent = generateDataTable(combinedColumns4, mergedData4, currentPage4, setCurrentPage4, rowsPerPage4, setRowsPerPage4, selectedRows4, setSelectedRows4);
+    }else if (selecttype === 'PcBranchData') {
+      tableContent = generateDataTable(combinedColumns5, mergedData5, currentPage5, setCurrentPage5, rowsPerPage5, setRowsPerPage5, selectedRows5, setSelectedRows5);
+    }else if (selecttype === 'SesBranchData') {
+      tableContent = generateDataTable(combinedColumns6, mergedData6, currentPage6, setCurrentPage6, rowsPerPage6, setRowsPerPage6, selectedRows6, setSelectedRows6);
     }
+    
     
 
 
