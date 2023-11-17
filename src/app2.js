@@ -813,18 +813,6 @@ const handleStateChange = (e) => {
       }));
   }
 
-  const branchid = {
-    Perungudi : "1",
-    Arumbakkam : "2",
-    Neelankarai : "3",
-    Pallavaram : "4",
-    Kasavanahalli : "5",
-    Hydrabad : "6",
-    Kochi : "7",
-    Coimbature : "8",
-    Moduravoyal : "9"
-  }
-
     const options = {
       animationEnabled: true,
       exportEnabled: true,
@@ -852,9 +840,7 @@ const handleStateChange = (e) => {
         dataPoints: dataPoints,
         click: (e) => {
           const dataPoint = e.dataPoint;
-          const branchID = branchid[dataPoint.name]; // Get branch ID directly here
-        
-          handleDataPointClick(branchID); // Pass branchID to the function
+          handleDataPointClick(dataPoint);
         }
       }],
     };
@@ -867,12 +853,14 @@ const handleStateChange = (e) => {
 
 const [Psservice, setPsservice] = useState([]);
 
-const handleDataPointClick = async (branchID) => {
+const handleDataPointClick = async () => {
   setfirstbar(true);
   setIsLoading(true);
+  // Define your stateParam, cityParam, branchParam, from_Date, and to_Date here
+  const stateParam = selectedState; // Replace with the actual selectedState
+  const cityParam = selectedCity; // Replace with the actual selectedCity
+  const branchParam = selectedBranches; // Replace with the actual selectedBranches
 
-
-     console.log("branchID", branchID);
   const from_Date = fromDate ? new Date(fromDate) : new Date();
 
   // Convert fromDate to the required format
@@ -892,7 +880,7 @@ const handleDataPointClick = async (branchID) => {
 
   try {
     const apiEndpoints = [
-      `procedural_service?branch=${branchID}&start=${formattedFrom_Date}&end=${formattedTo_Date}`
+      `procedural_service?state=${stateParam}&city=${cityParam}&branch=${branchParam}&start=${formattedFrom_Date}&end=${formattedTo_Date}`
     ];
 
     const responses = await Promise.all(apiEndpoints.map(endpoint => axios.post(`http://localhost:8080/${endpoint}`)));
@@ -919,13 +907,20 @@ const handleDataPointClick = async (branchID) => {
     if (order > suffixes.length - 1) order = suffixes.length - 1;
     var suffix = suffixes[order];
     return CanvasJS.formatNumber(e.value / Math.pow(1000, order)) + suffix;
-  };
-  
+  }
+
+const formatCurrency = (amount) => {
+      return new Intl.NumberFormat('en-IN', {
+        style: 'currency',
+        currency: 'INR',
+        maximumFractionDigits: 0
+      }).format(amount);
+    };
+
   const dataPoints = Psservice.map(item => ({
-    y: parseFloat(item.total_procedure_service_amount), // Ensure the value is parsed as a float
+    y: formatCurrency(item.total_procedure_service_amount),
     label: item.service_type
   }));
-  
   
   const options = {
     animationEnabled: true,
@@ -940,7 +935,7 @@ const handleDataPointClick = async (branchID) => {
     axisY: {
       title: "Amounts",
       includeZero: true,
-      labelFormatter: addSymbols, // Formatting labels here
+      labelFormatter: addSymbols,
     },
     data: [
       {
@@ -949,7 +944,6 @@ const handleDataPointClick = async (branchID) => {
       },
     ],
   };
-  
   
 
   let tableContent;
