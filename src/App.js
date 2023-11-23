@@ -48,7 +48,7 @@ function App() {
    console.log(countryId);
    try {
      const response = await fetch(
-      `http://164.52.220.10:4040/api/branches/states?branch_country_id=${countryId}`
+      `http://124.123.68.117:4040/api/branches/states?branch_country_id=${countryId}`
      );
      const data = await response.json();
      console.log("state",data);
@@ -64,7 +64,7 @@ const fetchCities = async (stateId) => {
   console.log(stateId);
   try {
     const response = await fetch(
-      `http://164.52.220.10:4040/api/branches/cities?branch_state_id=${stateId}`
+      `http://124.123.68.117:4040/api/branches/cities?branch_state_id=${stateId}`
     );
     const data = await response.json();
     setCities(data);
@@ -81,7 +81,7 @@ const fetchBranchLocations = async (cityId) => {
 
   try {
     const response = await fetch(
-      `http://164.52.220.10:4040/api/branches/location?branch_city_id=${cityId}`
+      `http://124.123.68.117:4040/api/branches/location?branch_city_id=${cityId}`
     );
     const data = await response.json();
     setBranchLocations(data);
@@ -184,6 +184,8 @@ const handleStateChange = (e) => {
       const [chartPsbranchtotal, setChartPsbranchtotal] = useState([]);
       const [chartSesbranchtotal, setChartSesbranchtotal] = useState([]);
       const [chartMeqbranchtotal, setChartMeqbranchtotal] = useState([]);
+      const [chartEcbranchtotal, setChartEcbranchtotal] = useState([]);
+      const [chartPcbranchtotal, setChartPcbranchtotal] = useState([]);
 
        // ----------------- CONSOLIDATED BILL PIE-CHART STATE  --------------------------//
       const [chartCbbranchtotal, setChartCbbranchtotal] = useState([]);
@@ -253,7 +255,7 @@ const handleStateChange = (e) => {
   
           const responses = await Promise.all(apiEndpoints.map(endpoint => axios.post(`http://localhost:8080/${endpoint}`)));
   
-          const [chartbillInvoiceResponse, fbResponse, ProceduralServiceResponse, ExtraServiceResponse, Eqresponse, medicalcaresponse, personalresponse,ConsolidatedResponse] = responses.map(response => response.data);
+          const [chartbillInvoiceResponse, fbResponse, ProceduralServiceResponse, ExtraServiceResponse, Eqresponse, EcResponse, PcResponse,ConsolidatedResponse] = responses.map(response => response.data);
   
           setBillinvoicetotal(chartbillInvoiceResponse[0]);
           setFbtotal(fbResponse[0]);
@@ -261,8 +263,8 @@ const handleStateChange = (e) => {
           console.log("procedrural service :",ProceduralServiceResponse[0]);
           setSestotal(ExtraServiceResponse[0]);
           setMeqtotal(Eqresponse[0]);
-          setMedialcaretotal(medicalcaresponse[0]);
-          setPersonalcaretotal(personalresponse[0]);
+          setMedialcaretotal(EcResponse[0]);
+          setPersonalcaretotal(PcResponse[0]);
           setCbtotal(ConsolidatedResponse[0]);
           setIpendingtotal(ConsolidatedResponse[0]);
           setIpaidtotal(ConsolidatedResponse[0]);
@@ -274,20 +276,24 @@ const handleStateChange = (e) => {
           setPsdata(extractAndFlattenData(ProceduralServiceResponse));
           setSesdata(extractAndFlattenData(ExtraServiceResponse));
           setMeqdata(extractAndFlattenData(Eqresponse));
-          setEcdata(extractAndFlattenData(medicalcaresponse));
-          setPcdata(extractAndFlattenData(personalresponse));
+          setEcdata(extractAndFlattenData(EcResponse));
+          setPcdata(extractAndFlattenData(PcResponse));
   
           const chartData1 = chartbillInvoiceResponse.slice(1).map(data => ({ branch_name: data.branch_name, total_total_amount: data.total_total_amount }));
           const chartData2 = fbResponse.slice(1).map(data => ({ branch_name: data.branch_name, total_fb_amount: data.total_fb_amount }));
           const chartData3 = ProceduralServiceResponse.slice(1).map(data => ({ branch_name: data.branch_name, total_procedure_service_amount: data.total_procedure_service_amount }));
-          const chartData4 = ExtraServiceResponse.slice(1).map(data => ({ branch_name: data.branch_name, total_staff_extra_service_amount: data.total_staff_extra_service_amount }));
+          const chartData4 = ExtraServiceResponse.slice(1).map(data => ({ branch_name: data.branch_name, total_branch_staff_extra_amount: data.total_branch_staff_extra_amount }));
           const chartData5 = Eqresponse.slice(1).map(data => ({ branch_name: data.branch_name, total_medical_equipment_amount: data.total_medical_equipment_amount }));
+          const chartData6 = EcResponse.slice(1).map(data => ({ branch_name: data.branch_name, total_emergency_care_amount: data.total_emergency_care_amount }));
+          const chartData7 = PcResponse.slice(1).map(data => ({ branch_name: data.branch_name, total_sum_personal_care: data.total_sum_personal_care }));
   
           setChartbillinvoicebranchtotal(chartData1);
           setChartFbbranchtotal(chartData2);
           setChartPsbranchtotal(chartData3);
           setChartSesbranchtotal(chartData4);
           setChartMeqbranchtotal(chartData5);
+          setChartEcbranchtotal(chartData6);
+          setChartPcbranchtotal(chartData7);
           setselecttype('Revenue');
         } catch (error) {
           console.error('Error fetching data: ', error);
@@ -299,88 +305,149 @@ const handleStateChange = (e) => {
 
  // ----------------- Default Page Data Fetching --------------------------// 
 
-      // const fetchDefaultData = async () => {
-      //   const from_Date = new Date();
+      const fetchDefaultData = async () => {
+        const from_Date = new Date();
 
-      //   // Convert fromDate to the required format
-      //   const fromYear = from_Date.getFullYear();
-      //   const fromMonth = String(from_Date.getMonth() + 1).padStart(2, '0');
-      //   const fromDay = String(from_Date.getDate()).padStart(2, '0');
-      //   const formattedFrom_Date = `${fromYear}-${fromMonth}-${fromDay}`;
+        // Convert fromDate to the required format
+        const fromYear = from_Date.getFullYear();
+        const fromMonth = String(from_Date.getMonth() + 1).padStart(2, '0');
+        const fromDay = String(from_Date.getDate()).padStart(2, '0');
+        const formattedFrom_Date = `${fromYear}-${fromMonth}-${fromDay}`;
 
-      //   // Get the current date if toDate is not selected
-      //   const to_Date = new Date();
-      //   const test2 = new Date();
+        // Get the current date if toDate is not selected
+        const to_Date = new Date();
+        const test2 = new Date();
 
-      //   console.log("next Date :",test2);
+        console.log("next Date :",test2);
 
-      //   // Convert toDate to the required format
-      //   const toYear = to_Date.getFullYear();
-      //   const toMonth = String(to_Date.getMonth() + 1).padStart(2, '0');
-      //   const toDay = String(to_Date.getDate()+1).padStart(2, '0');
-      //   const formattedTo_Date = `${toYear}-${toMonth}-${toDay}`;
-      //   setfirstbar(true);
-      //   setIsLoading(true);
+        // Convert toDate to the required format
+        const toYear = to_Date.getFullYear();
+        const toMonth = String(to_Date.getMonth() + 1).padStart(2, '0');
+        const toDay = String(to_Date.getDate()+1).padStart(2, '0');
+        const formattedTo_Date = `${toYear}-${toMonth}-${toDay}`;
+        setfirstbar(1);
+        setIsLoading(true);
 
-      //   try {
-      //     const apiEndpoints = [
-      //       `bill_invoice?state=&city=&branch=&start=${formattedFrom_Date}&end=${formattedTo_Date}&status=Paid`,
-      //       `fb?state=&city=&branch=&start=${formattedFrom_Date}&end=${formattedTo_Date}`,
-      //       `procedural_service?state=&city=&branch=&start=${formattedFrom_Date}&end=${formattedTo_Date}`,
-      //       `staff_extra_service?state=&city=&branch=&start=${formattedFrom_Date}&end=${formattedTo_Date}`,
-      //       `medical_equipemts?state=&city=&branch=&start=${formattedFrom_Date}&end=${formattedTo_Date}`,
-      //       `emergency_care?state=&city=&branch=&start=${formattedFrom_Date}&end=${formattedTo_Date}`,
-      //       `personal_care?state=&city=&branch=&start=${formattedFrom_Date}&end=${formattedTo_Date}`,
-      //       `consolidated_bill?state=&city=&branch=&start=${formattedFrom_Date}&end=${formattedTo_Date}`
+        // try {
+        //   const apiEndpoints = [
+        //     `bill_invoice?state=&city=&branch=&start=${formattedFrom_Date}&end=${formattedTo_Date}&status=Paid`,
+        //     `fb?state=&city=&branch=&start=${formattedFrom_Date}&end=${formattedTo_Date}`,
+        //     `procedural_service?state=&city=&branch=&start=${formattedFrom_Date}&end=${formattedTo_Date}`,
+        //     `staff_extra_service?state=&city=&branch=&start=${formattedFrom_Date}&end=${formattedTo_Date}`,
+        //     `medical_equipemts?state=&city=&branch=&start=${formattedFrom_Date}&end=${formattedTo_Date}`,
+        //     `emergency_care?state=&city=&branch=&start=${formattedFrom_Date}&end=${formattedTo_Date}`,
+        //     `personal_care?state=&city=&branch=&start=${formattedFrom_Date}&end=${formattedTo_Date}`,
+        //     `consolidated_bill?state=&city=&branch=&start=${formattedFrom_Date}&end=${formattedTo_Date}`
 
             
-      //     ];
+        //   ];
 
-      //     const responses = await Promise.all(apiEndpoints.map(endpoint => axios.post(`http://localhost:8080/${endpoint}`)));
+        //   const responses = await Promise.all(apiEndpoints.map(endpoint => axios.post(`http://localhost:8080/${endpoint}`)));
 
-      //     const [chartbillInvoiceResponse, fbResponse, ProceduralServiceResponse, ExtraServiceResponse, Eqresponse,medicalcaresponse, personalresponse, ConsolidatedResponse] = responses.map(response => response.data);
+        //   const [chartbillInvoiceResponse, fbResponse, ProceduralServiceResponse, ExtraServiceResponse, Eqresponse,medicalcaresponse, personalresponse, ConsolidatedResponse] = responses.map(response => response.data);
 
-      //     setBillinvoicetotal(chartbillInvoiceResponse[0]);
-      //     setFbtotal(fbResponse[0]);
-      //     setPstotal(ProceduralServiceResponse[0]);
-      //     console.log("procedrural service :",ProceduralServiceResponse[0]);
-      //     setSestotal(ExtraServiceResponse[0]);
-      //     setMeqtotal(Eqresponse[0]);
-      //     setMedialcaretotal(medicalcaresponse[0]);
-      //     setPersonalcaretotal(personalresponse[0]);
-      //     setCbtotal(ConsolidatedResponse[0]);
-      //     setIpendingtotal(ConsolidatedResponse[0]);
-      //     setIpaidtotal(ConsolidatedResponse[0]);
-      //     setIpartialtotal(ConsolidatedResponse[0]);
+        //   setBillinvoicetotal(chartbillInvoiceResponse[0]);
+        //   setFbtotal(fbResponse[0]);
+        //   setPstotal(ProceduralServiceResponse[0]);
+        //   console.log("procedrural service :",ProceduralServiceResponse[0]);
+        //   setSestotal(ExtraServiceResponse[0]);
+        //   setMeqtotal(Eqresponse[0]);
+        //   setMedialcaretotal(medicalcaresponse[0]);
+        //   setPersonalcaretotal(personalresponse[0]);
+        //   setCbtotal(ConsolidatedResponse[0]);
+        //   setIpendingtotal(ConsolidatedResponse[0]);
+        //   setIpaidtotal(ConsolidatedResponse[0]);
+        //   setIpartialtotal(ConsolidatedResponse[0]);
 
   
-      //     setBillinvoicedata(extractAndFlattenData(chartbillInvoiceResponse));
-      //     setFbdata(extractAndFlattenData(fbResponse));
-      //     setPsdata(extractAndFlattenData(ProceduralServiceResponse));
-      //     setSesdata(extractAndFlattenData(ExtraServiceResponse));
-      //     setMeqdata(extractAndFlattenData(Eqresponse));
-      //     setEcdata(extractAndFlattenData(medicalcaresponse));
-      //     setPcdata(extractAndFlattenData(personalresponse));
+        //   setBillinvoicedata(extractAndFlattenData(chartbillInvoiceResponse));
+        //   setFbdata(extractAndFlattenData(fbResponse));
+        //   setPsdata(extractAndFlattenData(ProceduralServiceResponse));
+        //   setSesdata(extractAndFlattenData(ExtraServiceResponse));
+        //   setMeqdata(extractAndFlattenData(Eqresponse));
+        //   setEcdata(extractAndFlattenData(medicalcaresponse));
+        //   setPcdata(extractAndFlattenData(personalresponse));
 
-      //     const chartData1 = chartbillInvoiceResponse.slice(1).map(data => ({ branch: data.branch, total_total_amount: data.total_total_amount }));
-      //     const chartData2 = fbResponse.slice(1).map(data => ({ branch: data.branch, total_fb_amount: data.total_fb_amount }));
-      //     const chartData3 = ProceduralServiceResponse.slice(1).map(data => ({ branch: data.branch, total_procedure_service_amount: data.total_procedure_service_amount }));
-      //     const chartData4 = ExtraServiceResponse.slice(1).map(data => ({ branch: data.branch, total_staff_extra_service_amount: data.total_staff_extra_service_amount }));
-      //     const chartData5 = Eqresponse.slice(1).map(data => ({ branch: data.branch, total_medical_equipment_amount: data.total_medical_equipment_amount }));
+        //   const chartData1 = chartbillInvoiceResponse.slice(1).map(data => ({ branch: data.branch, total_total_amount: data.total_total_amount }));
+        //   const chartData2 = fbResponse.slice(1).map(data => ({ branch: data.branch, total_fb_amount: data.total_fb_amount }));
+        //   const chartData3 = ProceduralServiceResponse.slice(1).map(data => ({ branch: data.branch, total_procedure_service_amount: data.total_procedure_service_amount }));
+        //   const chartData4 = ExtraServiceResponse.slice(1).map(data => ({ branch: data.branch, total_staff_extra_service_amount: data.total_staff_extra_service_amount }));
+        //   const chartData5 = Eqresponse.slice(1).map(data => ({ branch: data.branch, total_medical_equipment_amount: data.total_medical_equipment_amount }));
   
-      //     setChartbillinvoicebranchtotal(chartData1);
-      //     setChartFbbranchtotal(chartData2);
-      //     setChartPsbranchtotal(chartData3);
-      //     setChartSesbranchtotal(chartData4);
-      //     setChartMeqbranchtotal(chartData5);
-      //     setselecttype('Revenue');
-      //   } catch (error) {
-      //     console.error('Error fetching data: ', error);
-      //   } finally {
-      //     setIsLoading(false);
-      //     setfirstbar(false);
-      //   }
-      // };
+        //   setChartbillinvoicebranchtotal(chartData1);
+        //   setChartFbbranchtotal(chartData2);
+        //   setChartPsbranchtotal(chartData3);
+        //   setChartSesbranchtotal(chartData4);
+        //   setChartMeqbranchtotal(chartData5);
+        //   setselecttype('Revenue');
+        // } catch (error) {
+        //   console.error('Error fetching data: ', error);
+        // } finally {
+        //   setIsLoading(false);
+        //   setfirstbar(false);
+        // }
+        try {
+          const apiEndpoints = [
+            `bill_invoice?state=&city=&branch=&start=${formattedFrom_Date}&end=${formattedTo_Date}&status=Paid`,
+            `fb?state=&city=&branch=&start=${formattedFrom_Date}&end=${formattedTo_Date}`,
+            `procedural_service?state=&city=&branch=&start=${formattedFrom_Date}&end=${formattedTo_Date}`,
+            `staff_extra_service?state=&city=&branch=&start=${formattedFrom_Date}&end=${formattedTo_Date}`,
+            `medical_equipemts?state=&city=&branch=&start=${formattedFrom_Date}&end=${formattedTo_Date}`,
+            `emergency_care?state=&city=&branch=&start=${formattedFrom_Date}&end=${formattedTo_Date}`,
+            `personal_care?state=&city=&branch=&start=${formattedFrom_Date}&end=${formattedTo_Date}`,
+            `consolidated_bill?state=&city=&branch=&start=${formattedFrom_Date}&end=${formattedTo_Date}`
+
+          ];
+  
+          const responses = await Promise.all(apiEndpoints.map(endpoint => axios.post(`http://localhost:8080/${endpoint}`)));
+  
+          const [chartbillInvoiceResponse, fbResponse, ProceduralServiceResponse, ExtraServiceResponse, Eqresponse, EcResponse, PcResponse,ConsolidatedResponse] = responses.map(response => response.data);
+  
+          setBillinvoicetotal(chartbillInvoiceResponse[0]);
+          setFbtotal(fbResponse[0]);
+          // setPstotal(ProceduralServiceResponse[0]);
+          console.log("procedrural service :",ProceduralServiceResponse[0]);
+          setSestotal(ExtraServiceResponse[0]);
+          // setMeqtotal(Eqresponse[0]);
+          // setMedialcaretotal(EcResponse[0]);
+          setPersonalcaretotal(PcResponse[0]);
+          setCbtotal(ConsolidatedResponse[0]);
+          setIpendingtotal(ConsolidatedResponse[0]);
+          setIpaidtotal(ConsolidatedResponse[0]);
+          setIpartialtotal(ConsolidatedResponse[0]);
+
+  
+          setBillinvoicedata(extractAndFlattenData(chartbillInvoiceResponse));
+          setFbdata(extractAndFlattenData(fbResponse));
+          setPsdata(extractAndFlattenData(ProceduralServiceResponse));
+          setSesdata(extractAndFlattenData(ExtraServiceResponse));
+          setMeqdata(extractAndFlattenData(Eqresponse));
+          setEcdata(extractAndFlattenData(EcResponse));
+          setPcdata(extractAndFlattenData(PcResponse));
+  
+          const chartData1 = chartbillInvoiceResponse.slice(1).map(data => ({ branch_name: data.branch_name, total_total_amount: data.total_total_amount }));
+          const chartData2 = fbResponse.slice(1).map(data => ({ branch_name: data.branch_name, total_fb_amount: data.total_fb_amount }));
+          const chartData3 = ProceduralServiceResponse.slice(1).map(data => ({ branch_name: data.branch_name, total_procedure_service_amount: data.total_procedure_service_amount }));
+          const chartData4 = ExtraServiceResponse.slice(1).map(data => ({ branch_name: data.branch_name, total_branch_staff_extra_amount: data.total_branch_staff_extra_amount }));
+          const chartData5 = Eqresponse.slice(1).map(data => ({ branch_name: data.branch_name, total_medical_equipment_amount: data.total_medical_equipment_amount }));
+          const chartData6 = EcResponse.slice(1).map(data => ({ branch_name: data.branch_name, total_emergency_care_amount: data.total_emergency_care_amount }));
+          const chartData7 = PcResponse.slice(1).map(data => ({ branch_name: data.branch_name, total_sum_personal_care: data.total_sum_personal_care }));
+  
+          setChartbillinvoicebranchtotal(chartData1);
+          setChartFbbranchtotal(chartData2);
+          setChartPsbranchtotal(chartData3);
+          setChartSesbranchtotal(chartData4);
+          setChartMeqbranchtotal(chartData5);
+          setChartEcbranchtotal(chartData6);
+          setChartPcbranchtotal(chartData7);
+          setselecttype('Revenue');
+        } catch (error) {
+          console.error('Error fetching data: ', error);
+        } finally {
+          setIsLoading(false);
+          setfirstbar(2);
+        }
+      };
 
        // ----------------- DEFAULT OR FILTER IF ELSE CONDITION--------------------------// 
 
@@ -388,7 +455,7 @@ const handleStateChange = (e) => {
         if (filterApplied) {
           fetchDataBasedOnFilter();
         } else {
-          // fetchDefaultData();
+          fetchDefaultData();
         }
       }, [filterApplied]);
 
@@ -691,9 +758,17 @@ const handleStateChange = (e) => {
       const consolidatedData1 = consolidateData(chartBillinvoicebranchtotal, item => item.total_total_amount);
       const consolidatedData2 = consolidateData(chartFbbranchtotal, item => item.total_fb_amount);
       const consolidatedData3 = consolidateData(chartPsbranchtotal, item => item.total_procedure_service_amount);
-      const consolidatedData4 = consolidateData(chartSesbranchtotal, item => item.total_staff_extra_service_amount);
+      const consolidatedData4 = consolidateData(chartSesbranchtotal, item => item.total_branch_staff_extra_amount);
       const consolidatedData5 = consolidateData(chartMeqbranchtotal, item => item.total_medical_equipment_amount);
-
+      const consolidatedData6 = consolidateData(chartEcbranchtotal, item => item.total_emergency_care_amount);
+      const consolidatedData7 = consolidateData(chartPcbranchtotal, item => item.total_sum_personal_care);
+  console.log("1",consolidatedData1);
+  console.log("2",consolidatedData2);
+  console.log("3",consolidatedData3);
+  console.log("4",consolidatedData4);
+  console.log("5",consolidatedData5);
+  console.log("6",consolidatedData6);
+  console.log("7",consolidatedData7);
       const combinedData = {};
 
       for (const branch_name in consolidatedData1) {
@@ -703,7 +778,9 @@ const handleStateChange = (e) => {
             (Number(consolidatedData2[branch_name]) || 0) +
             (Number(consolidatedData3[branch_name]) || 0) +
             (Number(consolidatedData4[branch_name]) || 0) +
-            (Number(consolidatedData5[branch_name]) || 0)
+            (Number(consolidatedData5[branch_name]) || 0) +
+            (Number(consolidatedData6[branch_name]) || 0) +
+            (Number(consolidatedData7[branch_name]) || 0) 
           );
         }
       }
@@ -844,6 +921,7 @@ const handleStateChange = (e) => {
         indexLabel: "{name}: {yValueFormatString}",
         startAngle: -180,
         dataPoints: dataPoints,
+        cursor: "pointer",
         click: (e) => {
           const dataPoint = e.dataPoint;
           const branchID = branchid[dataPoint.name]; // Get branch ID directly here
@@ -865,11 +943,17 @@ const [Psservice, setPsservice] = useState([]);
 const [Seservice, setSeservice] = useState([]);
 const [Fbservice, setFbservice] = useState([]);
 const [BIservice, setBIservice] = useState([]);
+const [Meqservice, setMeqservice] = useState([]);
+const [Ecservice, setEcservice] = useState([]);
+const [Pcservice, setPcservice] = useState([]);
 
 const [Psbranchdata, setPsbranchdata] = useState([{}]);
 const [Sesbranchdata, setSesbranchdata] = useState([{}]);
 const [Fbbranchdata, setFbbranchdata] = useState([{}]);
 const [BIbranchdata, setBIbranchdata] = useState([{}]);
+const [Meqbranchdata, setMeqbranchdata] = useState([{}]);
+const [Ecbranchdata, setEcbranchdata] = useState([{}]);
+const [Pcbranchdata, setPcbranchdata] = useState([{}]);
 
 
 const handleDataPointClick = async (branchID) => {
@@ -900,11 +984,14 @@ const handleDataPointClick = async (branchID) => {
       `staff_extra_service?branch=${branchID}&start=${formattedFrom_Date}&end=${formattedTo_Date}`,
       `fb?branch=${branchID}&start=${formattedFrom_Date}&end=${formattedTo_Date}`,
       `bill_invoice?branch=${branchID}&start=${formattedFrom_Date}&end=${formattedTo_Date}`,
+      `medical_equipemts?branch=${branchID}&start=${formattedFrom_Date}&end=${formattedTo_Date}`,
+      `emergency_care?branch=${branchID}&start=${formattedFrom_Date}&end=${formattedTo_Date}`,
+      `personal_care?branch=${branchID}&start=${formattedFrom_Date}&end=${formattedTo_Date}`,
     ];
 
     const responses = await Promise.all(apiEndpoints.map(endpoint => axios.post(`http://localhost:8080/${endpoint}`)));
 
-    const [ProceduralServiceResponse,ExtraServiceResponse,fbResponse,billinvoiceResponse] = responses.map(response => response.data);
+    const [ProceduralServiceResponse,ExtraServiceResponse,fbResponse,billinvoiceResponse,EqResponse,EcResponse,PcResponse] = responses.map(response => response.data);
 
     const chartData7 = ProceduralServiceResponse.slice(1).map(data => ({ ps_service_type: data.service_type, total_procedure_service_amount: data.total_procedure_service_amount }));
     setPsservice(chartData7);
@@ -922,6 +1009,18 @@ const handleDataPointClick = async (branchID) => {
     setBIservice(chartData10);
     console.log("BillInvoice :",chartData10);
 
+    const chartData11 = EqResponse.slice(1).map(data => ({ meq_service_type: data.service_type, total_medical_equipment_amount: data.total_medical_equipment_amount }));
+    setMeqservice(chartData11);
+    console.log("Meq :",chartData11);
+
+    const chartData12 = EcResponse.slice(1).map(data => ({ ec_service_type: data.service_type, total_emergency_care_amount: data.total_emergency_care_amount }));
+    setEcservice(chartData12);
+    console.log("Ec :",chartData12);
+
+    const chartData13 = PcResponse.slice(1).map(data => ({ pc_service_type: data.service_type, total_sum_personal_care: data.total_sum_personal_care }));
+    setPcservice(chartData13);
+    console.log("Pc :",chartData13);
+
 
 
 
@@ -932,8 +1031,10 @@ const handleDataPointClick = async (branchID) => {
     setSesbranchdata(extractAndFlattenData1(ExtraServiceResponse));
     setFbbranchdata(extractAndFlattenData1(fbResponse));
     setBIbranchdata(extractAndFlattenData1(billinvoiceResponse));
+    setMeqbranchdata(extractAndFlattenData1(EqResponse));
+    setEcbranchdata(extractAndFlattenData1(EcResponse));
+    setPcbranchdata(extractAndFlattenData1(PcResponse));
 
-   
     setselecttype('BranchData');
   } catch (error) {
     console.error('Error fetching data: ', error);
@@ -945,6 +1046,14 @@ const handleDataPointClick = async (branchID) => {
 
 
    // -----------------BAR-CHART --------------------------//
+   const formatCurrency = (amount) => {
+    return new Intl.NumberFormat('en-IN', {
+      style: 'currency',
+      currency: 'INR',
+      maximumFractionDigits: 0
+    }).format(amount);
+  };
+  
    const formatDataPoints = (service, typeKey, amountKey) => {
     return service.map(item => ({
       y: parseFloat(item[amountKey]) || 0,
@@ -957,7 +1066,44 @@ const handleDataPointClick = async (branchID) => {
   const SesDataPoints = formatDataPoints(Seservice, 'ses_service_type', 'total_branch_staff_extra_amount');
   const FbDataPoints = formatDataPoints(Fbservice, 'fb_service_type', 'total_fb_amount');
   const BIDataPoints = formatDataPoints(BIservice, 'bi_service_type', 'total_total_amount');
+  const MeqDataPoints = formatDataPoints(Meqservice, 'meq_service_type', 'total_medical_equipment_amount');
+  const EcDataPoints = formatDataPoints(Ecservice, 'ec_service_type', 'total_emergency_care_amount');
+  const PcDataPoints = formatDataPoints(Pcservice, 'pc_service_type', 'total_sum_personal_care');
+  console.log("PsDataPoints",PsDataPoints);
+  console.log("SesDataPoints",SesDataPoints);
+  console.log("FbDataPoints",FbDataPoints);
+  console.log("BIDataPoints",BIDataPoints);
+  console.log("MeqDataPoints",MeqDataPoints);
+  console.log("EcDataPoints",EcDataPoints);
+  console.log("PcDataPoints",PcDataPoints);
+
+  const allDataPoints = [
+    ...PsDataPoints,
+    ...SesDataPoints,
+    ...FbDataPoints,
+    ...BIDataPoints,
+    ...MeqDataPoints,
+    ...EcDataPoints,
+    ...PcDataPoints,
+  ];
   
+  // Group data points by label
+  const groupedDataPoints = {};
+  allDataPoints.forEach(dataPoint => {
+    const label = dataPoint.label;
+    if (!groupedDataPoints[label]) {
+      groupedDataPoints[label] = {
+        y: 0,
+        label: label,
+        indexLabel: formatCurrency(dataPoint.y),
+      };
+    }
+    groupedDataPoints[label].y += dataPoint.y;
+  });
+  
+  // Convert groupedDataPoints object back to an array
+  const groupedDataArray = Object.values(groupedDataPoints);
+
   // Chart configuration
   const options = {
     animationEnabled: true,
@@ -984,60 +1130,58 @@ const handleDataPointClick = async (branchID) => {
         return CanvasJS.formatNumber(e.value / Math.pow(1000, order)) + suffix;
       },
     },
-    legend:{
-      cursor: "pointer"  
+    toolTip: {
+      shared: true,
+      contentFormatter: function (e) {
+        let content = '';
+        e.entries.forEach(function (entry) {
+          content += entry.dataPoint.label + ": " + formatCurrency(entry.dataPoint.y) + "<br>";
+        });
+        return content;
+      },
     },
     data: [
-      {
+
+       {
         type: "bar",
-        showInLegend: true,
-        name: "PS Service",
-        indexLabel: "{label} : {y}",
-        dataPoints: PsDataPoints,
+         dataPoints: groupedDataArray,
+        cursor: "pointer",
         click: (e) => {
+          const serviceType = e.dataPoint.label;
+          console.log("serviceType",serviceType);
+        if (serviceType === 'Procedural Service') {
           console.log("Psbranchdata", e.dataPoint);
           setselecttype('PsBranchData');
-        }
-      },
-      {
-        type: "bar",
-        showInLegend: true,
-        name: "SE Service",
-        indexLabel: "{label} : {y}",
-        dataPoints: SesDataPoints,
-        click: (e) => {
+        } else if (serviceType === 'Staff Extra Service') {
           console.log("Sesbranchdata", e.dataPoint);
           setselecttype('SesBranchData');
         }
-      },
-      {
-        type: "bar",
-        showInLegend: true,
-        name: "FB Service",
-        indexLabel: "{label} : {y}",
-        dataPoints: FbDataPoints,
-        click: (e) => {
+        else if (serviceType === 'Food & Beverages') {
           console.log("Fbbranchdata", e.dataPoint);
           setselecttype('FbBranchData');
         }
-      },
-      {
-        type: "bar",
-        showInLegend: true,
-        name: "R/M Service",
-        indexLabel: "{label} : {y}",
-        dataPoints: BIDataPoints,
-        click: (e) => {
+        else if (serviceType === 'Rental / Membership') {
           console.log("BIbranchdata", e.dataPoint);
           setselecttype('BIBranchData');
         }
+        else if (serviceType === 'Medical Equipments') {
+          console.log("Meqbranchdata", e.dataPoint);
+          setselecttype('MeqBranchData');
+        }
+        else if (serviceType === 'Emergency Care') {
+          console.log("Ecbranchdata", e.dataPoint);
+          setselecttype('EcBranchData');
+        }
+        else if (serviceType === 'Personal Care') {
+          console.log("Pcbranchdata", e.dataPoint);
+          setselecttype('PcBranchData');
+        }
+        }
       },
-    ],
+    ], 
   };
 // Assuming you have code to render the chart using CanvasJS library
 
-  
-  
 
   let tableContent;
           
@@ -1071,13 +1215,13 @@ const handleDataPointClick = async (branchID) => {
     {
       name: 'First Name',
       selector: 'first_name',
-      width:"150px",
+      // width:"150px",
       sortable: true,
     },
     {
       name: 'Last Name',
       selector: 'last_name',
-      width:"150px",
+      // width:"150px",
       sortable: true,
     },
     {
@@ -1100,7 +1244,7 @@ const handleDataPointClick = async (branchID) => {
     {
       name: 'Service Type',
       selector: 'rental_type',
-      width:"150px",
+      // width:"150px",
       sortable: true,
       cell: (row) => {
         if (row.rental_type) {
@@ -1124,6 +1268,7 @@ const handleDataPointClick = async (branchID) => {
     {
       name: 'Status',
       selector: 'payment_status',
+      // width:"120px",
       sortable: true,
       cell: (row) => {
       if (row.payment_status) {
@@ -1159,7 +1304,7 @@ const handleDataPointClick = async (branchID) => {
       name: 'Amount',
       selector: 'total_amount',
       sortable: true,
-      width:"250px",
+      // width:"250px",
       cell: (row) => {
         if (row.fb_amount) {
           return ` ${ new Intl.NumberFormat("en-IN", {
@@ -1220,20 +1365,17 @@ const handleDataPointClick = async (branchID) => {
 
    // ----------------- TABLE 1 CSV EXPORT FUNCTION --------------------------// 
 
-  const handleExportSelected1 = () => {
+   const handleExportSelected1 = () => {
     const selectedDataToExport1 = selectedRows1.map((row, index) => {
       let amount = null;
   
-      if (row.fb_amount) {
-        amount = row.fb_amount;
-      } else if (row.procedure_service_amount) {
-        amount = row.procedure_service_amount;
-      } else if (row.extra_service_amount) {
-        amount = row.extra_service_amount;
-      } else if (row.medical_equipment_amount) {
-        amount = row.medical_equipment_amount;
-      } else if (row.total_amount) {
-        amount = row.total_amount;
+      // Assigning the first non-null amount value found in the row
+      const amountKeys = ['fb_amount', 'procedure_service_amount', 'extra_service_amount', 'medical_equipment_amount', 'total_amount', 'emergency_care_amount', 'personal_care_amount'];
+      for (const key of amountKeys) {
+        if (row[key]) {
+          amount = row[key];
+          break;
+        }
       }
   
       if (amount !== null) {
@@ -1244,14 +1386,29 @@ const handleDataPointClick = async (branchID) => {
         }).format(amount);
       }
   
+      let invoice_date = null;
+      if (row.schedule_date) {
+        const originalDate = row.schedule_date;
+        invoice_date = new Date(originalDate).toLocaleDateString('en-IN');
+      } else if (row.invoice_date) {
+        const originalDate = row.invoice_date; // Assuming invoice_date is a string in the format 'YYYY-MM-DD HH:mm:ss'
+        invoice_date = new Date(originalDate).toLocaleDateString('en-IN');
+      }
+  
+      let status = row.payment_status || row.invoice_status || null;
+  
+      let service_type = row.rental_type || row.procedure_service_name || row.item_name || row.service || row.care_taken || null;
+  
       return {
-        Sno:  mergedData1.indexOf(row) + 1,
-        Branch: row.branch_name,
-        'Patient ID': row.patient_id,
-        'First Name': row.first_name,
-        'Last Name': row.last_name,
-        'Invoice Date': row.invoice_date,
-        Amount: amount,
+        Sno: index + 1,
+        'Branch Name': row.branch_name || '',
+        'Patient ID': row.patient_id || '',
+        'First Name': row.first_name || '',
+        'Last Name': row.last_name || '',
+        'Invoice Date': invoice_date || '',
+        'Status': status || '',
+        'Service Type': service_type || '',
+        'Amount': amount || '',
       };
     });
   
@@ -1365,7 +1522,7 @@ const handleDataPointClick = async (branchID) => {
     const selectedDataToExport2 = selectedRows2.map((row, index) => {
       let amount = null;
   
-    if (row.total_amount) {
+      if (row.total_amount) {
         amount = row.total_amount;
       }
   
@@ -1373,17 +1530,22 @@ const handleDataPointClick = async (branchID) => {
         amount = new Intl.NumberFormat('en-IN', {
           style: 'currency',
           currency: 'INR',
-          maximumFractionDigits: 0
+          maximumFractionDigits: 0,
         }).format(amount);
       }
   
+      let invoice_date = null;
+      if (row.created_at) {
+        const originalDate = row.created_at;
+        invoice_date = new Date(originalDate).toLocaleDateString('en-IN');
+      }
       return {
-        Sno:  mergedData2.indexOf(row) + 1,
-        Branch: row.branch_name,
+        Sno: mergedData2.indexOf(row) + 1,
+        'Branch Name': row.branch_name,
         'Patient ID': row.patient_id,
         'First Name': row.first_name,
         'Last Name': row.last_name,
-        'Invoice Date': row.created_at,
+        'Invoice Date': invoice_date,
         'Payment Status': row.payment_status,
         Amount: amount,
       };
@@ -1394,7 +1556,7 @@ const handleDataPointClick = async (branchID) => {
     return (
       <CSVLink
         data={selectedDataToExport2}
-        filename="ConsolidatedBill.csv"
+        filename="Generated_Invoice.csv"
         className="group [transform:translateZ(0)] px-3 py-2 rounded-lg overflow-hidden bg-gray-300 relative before:absolute before:bg-[#339966] before:top-1/2 before:left-1/2 before:h-2 before:w-9 before:-translate-y-1/2 before:-translate-x-1/2 before:rounded-sm  before:opacity-0 hover:before:scale-[5] hover:before:opacity-100 before:transition before:ease-in-out before:duration-500"
       >
         <span className="relative z-0 text-black transition duration-500 ease-in-out group-hover:text-gray-200">
@@ -1497,31 +1659,36 @@ const handleDataPointClick = async (branchID) => {
    
      const handleExportSelected3 = () => {
        const selectedDataToExport3 = selectedRows3.map((row, index) => {
-         let amount = null;
-     
-       if (row.total_amount) {
-           amount = row.total_amount;
-         }
-     
-         if (amount !== null) {
-           amount = new Intl.NumberFormat('en-IN', {
-             style: 'currency',
-             currency: 'INR',
-             maximumFractionDigits: 0
-           }).format(amount);
-         }
-     
-         return {
-           Sno:  mergedData3.indexOf(row) + 1,
-           Branch: row.branch_name,
+        let amount = null;
+  
+      if (row.total_amount) {
+        amount = row.total_amount;
+      }
+  
+      if (amount !== null) {
+        amount = new Intl.NumberFormat('en-IN', {
+          style: 'currency',
+          currency: 'INR',
+          maximumFractionDigits: 0,
+        }).format(amount);
+      }
+  
+      let invoice_date = null;
+      if (row.created_at) {
+        const originalDate = row.created_at;
+        invoice_date = new Date(originalDate).toLocaleDateString('en-IN');
+      }
+      return {
+        Sno: mergedData3.indexOf(row) + 1,
+        'Branch Name': row.branch_name,
         'Patient ID': row.patient_id,
         'First Name': row.first_name,
         'Last Name': row.last_name,
-        'Invoice Date': row.created_at,
+        'Invoice Date': invoice_date,
         'Payment Status': row.payment_status,
         Amount: amount,
-         };
-       });
+      };
+    });
      
        selectedDataToExport3.sort((a, b) => a.Sno - b.Sno);
      
@@ -1630,31 +1797,36 @@ const handleDataPointClick = async (branchID) => {
    
      const handleExportSelected4 = () => {
        const selectedDataToExport4 = selectedRows4.map((row, index) => {
-         let amount = null;
-     
-       if (row.total_amount) {
-           amount = row.total_amount;
-         }
-     
-         if (amount !== null) {
-           amount = new Intl.NumberFormat('en-IN', {
-             style: 'currency',
-             currency: 'INR',
-             maximumFractionDigits: 0
-           }).format(amount);
-         }
-     
-         return {
-           Sno:  mergedData4.indexOf(row) + 1,
-           Branch: row.branch_name,
-           'Patient ID': row.patient_id,
-           'First Name': row.first_name,
-           'Last Name': row.last_name,
-           'Invoice Date': row.created_at,
-           'Payment Status': row.payment_status,
-           Amount: amount,
-         };
-       });
+        let amount = null;
+  
+        if (row.total_amount) {
+          amount = row.total_amount;
+        }
+    
+        if (amount !== null) {
+          amount = new Intl.NumberFormat('en-IN', {
+            style: 'currency',
+            currency: 'INR',
+            maximumFractionDigits: 0,
+          }).format(amount);
+        }
+    
+        let invoice_date = null;
+        if (row.created_at) {
+          const originalDate = row.created_at;
+          invoice_date = new Date(originalDate).toLocaleDateString('en-IN');
+        }
+        return {
+          Sno: mergedData4.indexOf(row) + 1,
+          'Branch Name': row.branch_name,
+          'Patient ID': row.patient_id,
+          'First Name': row.first_name,
+          'Last Name': row.last_name,
+          'Invoice Date': invoice_date,
+          'Payment Status': row.payment_status,
+          Amount: amount,
+        };
+      });
      
        selectedDataToExport4.sort((a, b) => a.Sno - b.Sno);
      
@@ -1847,7 +2019,72 @@ const handleDataPointClick = async (branchID) => {
   
    // ----------------- TABLE 5 FIVE API MERGE DATA --------------------------// 
 
-  const mergedData5 = [...Psbranchdata, ...Sesbranchdata, ...Fbbranchdata, ...BIbranchdata];
+  const mergedData5 = [...Psbranchdata,...Sesbranchdata,...Fbbranchdata,...BIbranchdata,...Meqbranchdata,...Ecbranchdata,...Pcbranchdata];
+
+   
+      // ----------------- TABLE 5 CSV EXPORT FUNCTION BRANCH WISE REVENUE DATA--------------------------// 
+   
+      const handleExportSelected5 = () => {
+        const selectedDataToExport5 = selectedRows5.map((row, index) => {
+          let amount = null;
+      
+          // Assigning the first non-null amount value found in the row
+          const amountKeys = ['fb_amount', 'procedure_service_amount', 'extra_service_amount', 'medical_equipment_amount', 'total_amount', 'emergency_care_amount', 'personal_care_amount'];
+          for (const key of amountKeys) {
+            if (row[key]) {
+              amount = row[key];
+              break;
+            }
+          }
+      
+          if (amount !== null) {
+            amount = new Intl.NumberFormat('en-IN', {
+              style: 'currency',
+              currency: 'INR',
+              maximumFractionDigits: 0
+            }).format(amount);
+          }
+      
+          let invoice_date = null;
+          if (row.schedule_date) {
+            const originalDate = row.schedule_date;
+            invoice_date = new Date(originalDate).toLocaleDateString('en-IN');
+          } else if (row.invoice_date) {
+            const originalDate = row.invoice_date; // Assuming invoice_date is a string in the format 'YYYY-MM-DD HH:mm:ss'
+            invoice_date = new Date(originalDate).toLocaleDateString('en-IN');
+          }
+      
+          let status = row.payment_status || row.invoice_status || null;
+      
+          let service_type = row.rental_type || row.procedure_service_name || row.item_name || row.service || row.care_taken || null;
+           global.branchName1=row.branch_name
+          return {
+            Sno: index + 1,
+            'Branch Name': row.branch_name || '',
+            'Patient ID': row.patient_id || '',
+            'First Name': row.first_name || '',
+            'Last Name': row.last_name || '',
+            'Invoice Date': invoice_date || '',
+            'Status': status || '',
+            'Service Type': service_type || '',
+            'Amount': amount || '',
+          };
+        });
+      
+        selectedDataToExport5.sort((a, b) => a.Sno - b.Sno);
+      
+        return (
+          <CSVLink
+            data={selectedDataToExport5}
+            filename={`${global.branchName1}_RevenueData.csv`} 
+            className="group [transform:translateZ(0)] px-3 py-2 rounded-lg overflow-hidden bg-gray-300 relative before:absolute before:bg-[#339966] before:top-1/2 before:left-1/2 before:h-2 before:w-9 before:-translate-y-1/2 before:-translate-x-1/2 before:rounded-sm  before:opacity-0 hover:before:scale-[5] hover:before:opacity-100 before:transition before:ease-in-out before:duration-500"
+          >
+            <span className="relative z-0 text-black transition duration-500 ease-in-out group-hover:text-gray-200">
+              Export Selected as CSV
+            </span>
+          </CSVLink>
+        );
+      };
 
        // ----------------- TABLE 6 STATES --------------------------// 
 
@@ -1855,7 +2092,7 @@ const handleDataPointClick = async (branchID) => {
   const [rowsPerPage6, setRowsPerPage6] = useState(10); // row control state
   const [selectedRows6, setSelectedRows6] = useState([]);
   
-     // ----------------- TABLE 5 SCOLUMN --------------------------// 
+     // ----------------- TABLE 6 SCOLUMN --------------------------// 
   const combinedColumns6 = [
     {
       name: 'Sno',
@@ -1897,59 +2134,23 @@ const handleDataPointClick = async (branchID) => {
           const originalDate = row.invoice_date; // Assuming invoice_date is a string in the format 'YYYY-MM-DD HH:mm:ss'
           const formattedDate = new Date(originalDate).toLocaleDateString('en-IN');
           return formattedDate;
-        } else if (row.schedule_date) {
-          const originalDate = row.schedule_date; // Assuming schedule_date is a string in the format 'YYYY-MM-DD HH:mm:ss'
-          const formattedDate = new Date(originalDate).toLocaleDateString('en-IN');
-          return formattedDate;
-        }
+        } 
         return ''; // Return empty string if neither invoice_date nor schedule_date exists
       },
     },    
     {
       name: 'Service Type',
-      selector: 'rental_type',
+      selector: 'procedure_service_name',
       width:"150px",
       sortable: true,
-      cell: (row) => {
-        if (row.rental_type) {
-          return <span>{row.rental_type}</span>;
-        } else if (row.procedure_service_name) {
-          return <span>{row.procedure_service_name}</span>;
-        }else if (row.item_name) {
-          return <span>{row.item_name}</span>;
-        } 
-        else if (row.service) {
-          return <span>{row.service}</span>;
-        }
-        else if (row.care_taken) {
-          return <span>{row.care_taken}</span>;
-        }
-        else {
-          return null; // You might want to handle the case when neither rental_type nor procedure_service_name is defined.
-        }
-      },
+
     },      
     {
       name: 'Status',
       selector: 'payment_status',
       sortable: true,
       cell: (row) => {
-      if (row.payment_status) {
-          return   <span
-          className={`${row.payment_status === 'Cancelled'
-            ? 'px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-400 text-red-100'
-            : row.payment_status === 'Paid'
-              ? 'px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800'
-            : row.payment_status === 'Pending'
-              ? 'px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800'
-            : row.payment_status === 'Billed'
-              ? 'px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-sky-100 text-sky-800'
-                : 'text-black' // Default color for other payment_status
-            }`}
-        >
-          {row.payment_status}
-        </span>
-        } else if (row.invoice_status) {
+       if (row.invoice_status) {
           return  <span
           className={`${row.invoice_status === 'Pending'
               ? 'px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800'
@@ -1965,59 +2166,18 @@ const handleDataPointClick = async (branchID) => {
     },
     {
       name: 'Amount',
-      selector: 'total_amount',
+      selector: 'procedure_service_amount',
       sortable: true,
       width:"250px",
       cell: (row) => {
-        if (row.fb_amount) {
-          return ` ${ new Intl.NumberFormat("en-IN", {
-        style: "currency",
-        currency: "INR",
-        maximumFractionDigits: 0
-      }).format(row.fb_amount)} (FB)`;
-        }
-        else if (row.procedure_service_amount) {
+        if (row.procedure_service_amount) {
           return ` ${new Intl.NumberFormat("en-IN", {
         style: "currency",
         currency: "INR",
         maximumFractionDigits: 0
       }).format(row.procedure_service_amount)} (PS)`;
         }
-        else if (row.extra_service_amount) {
-          return ` ${new Intl.NumberFormat("en-IN", {
-        style: "currency",
-        currency: "INR",
-        maximumFractionDigits: 0
-      }).format(row.extra_service_amount)} (SES)`;
-        }
-        else if (row.medical_equipment_amount) {
-          return ` ${new Intl.NumberFormat("en-IN", {
-        style: "currency",
-        currency: "INR",
-        maximumFractionDigits: 0
-      }).format(row.medical_equipment_amount)} (MEQ)`;
-        }
-        else if (row.total_amount) {
-          return ` ${new Intl.NumberFormat("en-IN", {
-        style: "currency",
-        currency: "INR",
-        maximumFractionDigits: 0
-      }).format(row.total_amount)} (Bill Invoice)`;
-        }
-        else if (row.emergency_care_amount) {
-          return ` ${new Intl.NumberFormat("en-IN", {
-        style: "currency",
-        currency: "INR",
-        maximumFractionDigits: 0
-      }).format(row.emergency_care_amount)} (EC)`;
-        }
-        else if (row.personal_care_amount) {
-          return ` ${new Intl.NumberFormat("en-IN", {
-        style: "currency",
-        currency: "INR",
-        maximumFractionDigits: 0
-      }).format(row.personal_care_amount)} (PC)`;
-        }
+       
       },
     },
   ];
@@ -2025,6 +2185,67 @@ const handleDataPointClick = async (branchID) => {
    // ----------------- TABLE 6 FIVE API MERGE DATA --------------------------// 
 
   const mergedData6 = [...Psbranchdata];
+
+    // ----------------- TABLE 6 CSV EXPORT FUNCTION BRANCH WISE REVENUE DATA--------------------------// 
+   
+    const handleExportSelected6 = () => {
+      const selectedDataToExport6 = selectedRows6.map((row, index) => {
+        let amount = null;
+    
+        // Assigning the first non-null amount value found in the row
+        const amountKeys = ['procedure_service_amount'];
+        for (const key of amountKeys) {
+          if (row[key]) {
+            amount = row[key];
+            break;
+          }
+        }
+    
+        if (amount !== null) {
+          amount = new Intl.NumberFormat('en-IN', {
+            style: 'currency',
+            currency: 'INR',
+            maximumFractionDigits: 0
+          }).format(amount);
+        }
+    
+        let invoice_date = null;
+        if (row.invoice_date) {
+          const originalDate = row.invoice_date; // Assuming invoice_date is a string in the format 'YYYY-MM-DD HH:mm:ss'
+          invoice_date = new Date(originalDate).toLocaleDateString('en-IN');
+        }
+    
+        let status =  row.invoice_status || null;
+    
+        let service_type =  row.procedure_service_name || null;
+         global.branchName2=row.branch_name
+        return {
+          Sno: mergedData6.indexOf(row) + 1,
+          'Branch Name': row.branch_name || '',
+          'Patient ID': row.patient_id || '',
+          'First Name': row.first_name || '',
+          'Last Name': row.last_name || '',
+          'Invoice Date': invoice_date || '',
+          'Status': status || '',
+          'Service Type': service_type || '',
+          'Amount': amount || '',
+        };
+      });
+    
+      selectedDataToExport6.sort((a, b) => a.Sno - b.Sno);
+    
+      return (
+        <CSVLink
+          data={selectedDataToExport6}
+          filename={`${global.branchName2}_ProceduralServiceData.csv`} 
+          className="group [transform:translateZ(0)] px-3 py-2 rounded-lg overflow-hidden bg-gray-300 relative before:absolute before:bg-[#339966] before:top-1/2 before:left-1/2 before:h-2 before:w-9 before:-translate-y-1/2 before:-translate-x-1/2 before:rounded-sm  before:opacity-0 hover:before:scale-[5] hover:before:opacity-100 before:transition before:ease-in-out before:duration-500"
+        >
+          <span className="relative z-0 text-black transition duration-500 ease-in-out group-hover:text-gray-200">
+            Export Selected as CSV
+          </span>
+        </CSVLink>
+      );
+    };
 
        // ----------------- TABLE 7 STATES --------------------------// 
 
@@ -2074,37 +2295,15 @@ const handleDataPointClick = async (branchID) => {
           const originalDate = row.invoice_date; // Assuming invoice_date is a string in the format 'YYYY-MM-DD HH:mm:ss'
           const formattedDate = new Date(originalDate).toLocaleDateString('en-IN');
           return formattedDate;
-        } else if (row.schedule_date) {
-          const originalDate = row.schedule_date; // Assuming schedule_date is a string in the format 'YYYY-MM-DD HH:mm:ss'
-          const formattedDate = new Date(originalDate).toLocaleDateString('en-IN');
-          return formattedDate;
-        }
+        } 
         return ''; // Return empty string if neither invoice_date nor schedule_date exists
       },
     },    
     {
       name: 'Service Type',
-      selector: 'rental_type',
+      selector: 'service',
       width:"150px",
       sortable: true,
-      cell: (row) => {
-        if (row.rental_type) {
-          return <span>{row.rental_type}</span>;
-        } else if (row.procedure_service_name) {
-          return <span>{row.procedure_service_name}</span>;
-        }else if (row.item_name) {
-          return <span>{row.item_name}</span>;
-        } 
-        else if (row.service) {
-          return <span>{row.service}</span>;
-        }
-        else if (row.care_taken) {
-          return <span>{row.care_taken}</span>;
-        }
-        else {
-          return null; // You might want to handle the case when neither rental_type nor procedure_service_name is defined.
-        }
-      },
     },      
     {
       name: 'Status',
@@ -2126,18 +2325,7 @@ const handleDataPointClick = async (branchID) => {
         >
           {row.payment_status}
         </span>
-        } else if (row.invoice_status) {
-          return  <span
-          className={`${row.invoice_status === 'Pending'
-              ? 'px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800'
-            : row.invoice_status === 'Billed'
-              ? 'px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-sky-100 text-sky-800'
-                : 'text-black' // Default color for other invoice_status
-            }`}
-        >
-          {row.invoice_status}
-        </span>
-        }
+        } 
       }
     },
     {
@@ -2146,55 +2334,14 @@ const handleDataPointClick = async (branchID) => {
       sortable: true,
       width:"250px",
       cell: (row) => {
-        if (row.fb_amount) {
-          return ` ${ new Intl.NumberFormat("en-IN", {
-        style: "currency",
-        currency: "INR",
-        maximumFractionDigits: 0
-      }).format(row.fb_amount)} (FB)`;
-        }
-        else if (row.procedure_service_amount) {
-          return ` ${new Intl.NumberFormat("en-IN", {
-        style: "currency",
-        currency: "INR",
-        maximumFractionDigits: 0
-      }).format(row.procedure_service_amount)} (PS)`;
-        }
-        else if (row.extra_service_amount) {
+        if (row.extra_service_amount) {
           return ` ${new Intl.NumberFormat("en-IN", {
         style: "currency",
         currency: "INR",
         maximumFractionDigits: 0
       }).format(row.extra_service_amount)} (SES)`;
         }
-        else if (row.medical_equipment_amount) {
-          return ` ${new Intl.NumberFormat("en-IN", {
-        style: "currency",
-        currency: "INR",
-        maximumFractionDigits: 0
-      }).format(row.medical_equipment_amount)} (MEQ)`;
-        }
-        else if (row.total_amount) {
-          return ` ${new Intl.NumberFormat("en-IN", {
-        style: "currency",
-        currency: "INR",
-        maximumFractionDigits: 0
-      }).format(row.total_amount)} (Bill Invoice)`;
-        }
-        else if (row.emergency_care_amount) {
-          return ` ${new Intl.NumberFormat("en-IN", {
-        style: "currency",
-        currency: "INR",
-        maximumFractionDigits: 0
-      }).format(row.emergency_care_amount)} (EC)`;
-        }
-        else if (row.personal_care_amount) {
-          return ` ${new Intl.NumberFormat("en-IN", {
-        style: "currency",
-        currency: "INR",
-        maximumFractionDigits: 0
-      }).format(row.personal_care_amount)} (PC)`;
-        }
+
       },
     },
   ];
@@ -2202,6 +2349,69 @@ const handleDataPointClick = async (branchID) => {
    // ----------------- TABLE 7 FIVE API MERGE DATA --------------------------// 
 
   const mergedData7 = [...Sesbranchdata];
+
+  
+      // ----------------- TABLE 7 CSV EXPORT FUNCTION BRANCH WISE REVENUE DATA--------------------------// 
+   
+      const handleExportSelected7 = () => {
+        const selectedDataToExport7 = selectedRows7.map((row, index) => {
+          let amount = null;
+      
+          // Assigning the first non-null amount value found in the row
+          const amountKeys = ['extra_service_amount'];
+          for (const key of amountKeys) {
+            if (row[key]) {
+              amount = row[key];
+              break;
+            }
+          }
+      
+          if (amount !== null) {
+            amount = new Intl.NumberFormat('en-IN', {
+              style: 'currency',
+              currency: 'INR',
+              maximumFractionDigits: 0
+            }).format(amount);
+          }
+      
+          let invoice_date = null;
+          if (row.invoice_date) {
+            const originalDate = row.invoice_date; // Assuming invoice_date is a string in the format 'YYYY-MM-DD HH:mm:ss'
+            invoice_date = new Date(originalDate).toLocaleDateString('en-IN');
+          }
+      
+          let status = row.invoice_status || null;
+      
+          let service_type =  row.service ||  null;
+           global.branchName2=row.branch_name
+          return {
+            Sno: mergedData7.indexOf(row) + 1,
+            'Branch Name': row.branch_name || '',
+            'Patient ID': row.patient_id || '',
+            'First Name': row.first_name || '',
+            'Last Name': row.last_name || '',
+            'Invoice Date': invoice_date || '',
+            'Status': status || '',
+            'Service Type': service_type || '',
+            'Amount': amount || '',
+          };
+        });
+      
+        selectedDataToExport7.sort((a, b) => a.Sno - b.Sno);
+      
+        return (
+          <CSVLink
+            data={selectedDataToExport7}
+            filename={`${global.branchName2}_StaffExtraServiceData.csv`} 
+            className="group [transform:translateZ(0)] px-3 py-2 rounded-lg overflow-hidden bg-gray-300 relative before:absolute before:bg-[#339966] before:top-1/2 before:left-1/2 before:h-2 before:w-9 before:-translate-y-1/2 before:-translate-x-1/2 before:rounded-sm  before:opacity-0 hover:before:scale-[5] hover:before:opacity-100 before:transition before:ease-in-out before:duration-500"
+          >
+            <span className="relative z-0 text-black transition duration-500 ease-in-out group-hover:text-gray-200">
+              Export Selected as CSV
+            </span>
+          </CSVLink>
+        );
+      };
+
 
     // ----------------- TABLE 8 STATES --------------------------// 
 
@@ -2251,37 +2461,15 @@ const handleDataPointClick = async (branchID) => {
             const originalDate = row.invoice_date; // Assuming invoice_date is a string in the format 'YYYY-MM-DD HH:mm:ss'
             const formattedDate = new Date(originalDate).toLocaleDateString('en-IN');
             return formattedDate;
-          } else if (row.schedule_date) {
-            const originalDate = row.schedule_date; // Assuming schedule_date is a string in the format 'YYYY-MM-DD HH:mm:ss'
-            const formattedDate = new Date(originalDate).toLocaleDateString('en-IN');
-            return formattedDate;
-          }
+          } 
           return ''; // Return empty string if neither invoice_date nor schedule_date exists
         },
       },    
       {
         name: 'Service Type',
-        selector: 'rental_type',
+        selector: 'service',
         width:"150px",
         sortable: true,
-        cell: (row) => {
-          if (row.rental_type) {
-            return <span>{row.rental_type}</span>;
-          } else if (row.procedure_service_name) {
-            return <span>{row.procedure_service_name}</span>;
-          }else if (row.item_name) {
-            return <span>{row.item_name}</span>;
-          } 
-          else if (row.service) {
-            return <span>{row.service}</span>;
-          }
-          else if (row.care_taken) {
-            return <span>{row.care_taken}</span>;
-          }
-          else {
-            return null; // You might want to handle the case when neither rental_type nor procedure_service_name is defined.
-          }
-        },
       },      
       {
         name: 'Status',
@@ -2303,23 +2491,12 @@ const handleDataPointClick = async (branchID) => {
           >
             {row.payment_status}
           </span>
-          } else if (row.invoice_status) {
-            return  <span
-            className={`${row.invoice_status === 'Pending'
-                ? 'px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800'
-              : row.invoice_status === 'Billed'
-                ? 'px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-sky-100 text-sky-800'
-                  : 'text-black' // Default color for other invoice_status
-              }`}
-          >
-            {row.invoice_status}
-          </span>
-          }
+          } 
         }
       },
       {
         name: 'Amount',
-        selector: 'total_amount',
+        selector: 'fb_amount',
         sortable: true,
         width:"250px",
         cell: (row) => {
@@ -2330,48 +2507,7 @@ const handleDataPointClick = async (branchID) => {
           maximumFractionDigits: 0
         }).format(row.fb_amount)} (FB)`;
           }
-          else if (row.procedure_service_amount) {
-            return ` ${new Intl.NumberFormat("en-IN", {
-          style: "currency",
-          currency: "INR",
-          maximumFractionDigits: 0
-        }).format(row.procedure_service_amount)} (PS)`;
-          }
-          else if (row.extra_service_amount) {
-            return ` ${new Intl.NumberFormat("en-IN", {
-          style: "currency",
-          currency: "INR",
-          maximumFractionDigits: 0
-        }).format(row.extra_service_amount)} (SES)`;
-          }
-          else if (row.medical_equipment_amount) {
-            return ` ${new Intl.NumberFormat("en-IN", {
-          style: "currency",
-          currency: "INR",
-          maximumFractionDigits: 0
-        }).format(row.medical_equipment_amount)} (MEQ)`;
-          }
-          else if (row.total_amount) {
-            return ` ${new Intl.NumberFormat("en-IN", {
-          style: "currency",
-          currency: "INR",
-          maximumFractionDigits: 0
-        }).format(row.total_amount)} (Bill Invoice)`;
-          }
-          else if (row.emergency_care_amount) {
-            return ` ${new Intl.NumberFormat("en-IN", {
-          style: "currency",
-          currency: "INR",
-          maximumFractionDigits: 0
-        }).format(row.emergency_care_amount)} (EC)`;
-          }
-          else if (row.personal_care_amount) {
-            return ` ${new Intl.NumberFormat("en-IN", {
-          style: "currency",
-          currency: "INR",
-          maximumFractionDigits: 0
-        }).format(row.personal_care_amount)} (PC)`;
-          }
+          
         },
       },
     ];
@@ -2380,6 +2516,67 @@ const handleDataPointClick = async (branchID) => {
   
     const mergedData8 = [...Fbbranchdata];
 
+
+        // ----------------- TABLE 8 CSV EXPORT FUNCTION BRANCH WISE REVENUE DATA--------------------------// 
+
+    const handleExportSelected8 = () => {
+      const selectedDataToExport8 = selectedRows8.map((row, index) => {
+        let amount = null;
+    
+        // Assigning the first non-null amount value found in the row
+        const amountKeys = ['fb_amount'];
+        for (const key of amountKeys) {
+          if (row[key]) {
+            amount = row[key];
+            break;
+          }
+        }
+    
+        if (amount !== null) {
+          amount = new Intl.NumberFormat('en-IN', {
+            style: 'currency',
+            currency: 'INR',
+            maximumFractionDigits: 0
+          }).format(amount);
+        }
+    
+        let invoice_date = null;
+        if (row.invoice_date) {
+          const originalDate = row.invoice_date; // Assuming invoice_date is a string in the format 'YYYY-MM-DD HH:mm:ss'
+          invoice_date = new Date(originalDate).toLocaleDateString('en-IN');
+        }
+    
+        let status = row.payment_status ||  null;
+    
+        let service_type = row.service ||  null;
+         global.branchName3=row.branch_name
+        return {
+          Sno: mergedData8.indexOf(row) + 1,
+          'Branch Name': row.branch_name || '',
+          'Patient ID': row.patient_id || '',
+          'First Name': row.first_name || '',
+          'Last Name': row.last_name || '',
+          'Invoice Date': invoice_date || '',
+          'Status': status || '',
+          'Service Type': service_type || '',
+          'Amount': amount || '',
+        };
+      });
+    
+      selectedDataToExport8.sort((a, b) => a.Sno - b.Sno);
+    
+      return (
+        <CSVLink
+          data={selectedDataToExport8}
+          filename={`${global.branchName3}_FBData.csv`} 
+          className="group [transform:translateZ(0)] px-3 py-2 rounded-lg overflow-hidden bg-gray-300 relative before:absolute before:bg-[#339966] before:top-1/2 before:left-1/2 before:h-2 before:w-9 before:-translate-y-1/2 before:-translate-x-1/2 before:rounded-sm  before:opacity-0 hover:before:scale-[5] hover:before:opacity-100 before:transition before:ease-in-out before:duration-500"
+        >
+          <span className="relative z-0 text-black transition duration-500 ease-in-out group-hover:text-gray-200">
+            Export Selected as CSV
+          </span>
+        </CSVLink>
+      );
+    };
     // ----------------- TABLE 9 STATES --------------------------// 
 
     const [currentPage9, setCurrentPage9] = useState(1); // pagination state
@@ -2428,11 +2625,7 @@ const handleDataPointClick = async (branchID) => {
             const originalDate = row.invoice_date; // Assuming invoice_date is a string in the format 'YYYY-MM-DD HH:mm:ss'
             const formattedDate = new Date(originalDate).toLocaleDateString('en-IN');
             return formattedDate;
-          } else if (row.schedule_date) {
-            const originalDate = row.schedule_date; // Assuming schedule_date is a string in the format 'YYYY-MM-DD HH:mm:ss'
-            const formattedDate = new Date(originalDate).toLocaleDateString('en-IN');
-            return formattedDate;
-          }
+          } 
           return ''; // Return empty string if neither invoice_date nor schedule_date exists
         },
       },    
@@ -2441,24 +2634,6 @@ const handleDataPointClick = async (branchID) => {
         selector: 'rental_type',
         width:"150px",
         sortable: true,
-        cell: (row) => {
-          if (row.rental_type) {
-            return <span>{row.rental_type}</span>;
-          } else if (row.procedure_service_name) {
-            return <span>{row.procedure_service_name}</span>;
-          }else if (row.item_name) {
-            return <span>{row.item_name}</span>;
-          } 
-          else if (row.service) {
-            return <span>{row.service}</span>;
-          }
-          else if (row.care_taken) {
-            return <span>{row.care_taken}</span>;
-          }
-          else {
-            return null; // You might want to handle the case when neither rental_type nor procedure_service_name is defined.
-          }
-        },
       },      
       {
         name: 'Status',
@@ -2480,7 +2655,482 @@ const handleDataPointClick = async (branchID) => {
           >
             {row.payment_status}
           </span>
-          } else if (row.invoice_status) {
+          } 
+        }
+      },
+      {
+        name: 'Amount',
+        selector: 'total_amount',
+        sortable: true,
+        width:"250px",
+        cell: (row) => {
+           if (row.total_amount) {
+            return ` ${new Intl.NumberFormat("en-IN", {
+          style: "currency",
+          currency: "INR",
+          maximumFractionDigits: 0
+        }).format(row.total_amount)} (Bill Invoice)`;
+          }
+        },
+      },
+    ];
+    
+     // ----------------- TABLE 9 FIVE API MERGE DATA --------------------------// 
+  
+    const mergedData9 = [...BIbranchdata];
+
+      // ----------------- TABLE 9 CSV EXPORT FUNCTION BRANCH WISE REVENUE DATA--------------------------// 
+   
+      const handleExportSelected9 = () => {
+        const selectedDataToExport9 = selectedRows9.map((row, index) => {
+          let amount = null;
+      
+          // Assigning the first non-null amount value found in the row
+          const amountKeys = ['total_amount'];
+          for (const key of amountKeys) {
+            if (row[key]) {
+              amount = row[key];
+              break;
+            }
+          }
+      
+          if (amount !== null) {
+            amount = new Intl.NumberFormat('en-IN', {
+              style: 'currency',
+              currency: 'INR',
+              maximumFractionDigits: 0
+            }).format(amount);
+          }
+      
+          let invoice_date = null;
+          if (row.invoice_date) {
+            const originalDate = row.invoice_date; // Assuming invoice_date is a string in the format 'YYYY-MM-DD HH:mm:ss'
+            invoice_date = new Date(originalDate).toLocaleDateString('en-IN');
+          }
+      
+          let status = row.payment_status || null;
+      
+          let service_type = row.rental_type || null;
+           global.branchName4=row.branch_name
+          return {
+            Sno: mergedData9.indexOf(row) + 1,
+            'Branch Name': row.branch_name || '',
+            'Patient ID': row.patient_id || '',
+            'First Name': row.first_name || '',
+            'Last Name': row.last_name || '',
+            'Invoice Date': invoice_date || '',
+            'Status': status || '',
+            'Service Type': service_type || '',
+            'Amount': amount || '',
+          };
+        });
+      
+        selectedDataToExport9.sort((a, b) => a.Sno - b.Sno);
+      
+        return (
+          <CSVLink
+            data={selectedDataToExport9}
+            filename={`${global.branchName4}_BillInvoiceData.csv`} 
+            className="group [transform:translateZ(0)] px-3 py-2 rounded-lg overflow-hidden bg-gray-300 relative before:absolute before:bg-[#339966] before:top-1/2 before:left-1/2 before:h-2 before:w-9 before:-translate-y-1/2 before:-translate-x-1/2 before:rounded-sm  before:opacity-0 hover:before:scale-[5] hover:before:opacity-100 before:transition before:ease-in-out before:duration-500"
+          >
+            <span className="relative z-0 text-black transition duration-500 ease-in-out group-hover:text-gray-200">
+              Export Selected as CSV
+            </span>
+          </CSVLink>
+        );
+      };
+
+    // ----------------- TABLE 10 STATES --------------------------// 
+
+    const [currentPage10, setCurrentPage10] = useState(1); // pagination state
+    const [rowsPerPage10, setRowsPerPage10] = useState(10); // row control state
+    const [selectedRows10, setSelectedRows10] = useState([]);
+    
+       // ----------------- TABLE 10 SCOLUMN --------------------------// 
+    const combinedColumns10 = [
+      {
+        name: 'Sno',
+        cell: (row, rowIndex) => {
+          const index = mergedData10.indexOf(row) + 1;
+          return index;
+        },
+        sortable: true,
+        width: '70px',
+      },    
+      {
+        name: 'Branch Name',
+        selector: 'branch_name',
+        sortable: true,
+      },
+      {
+        name: 'Patient ID',
+        selector: 'patient_id',
+        sortable: true,
+      },
+      {
+        name: 'First Name',
+        selector: 'first_name',
+        width:"150px",
+        sortable: true,
+      },
+      {
+        name: 'Last Name',
+        selector: 'last_name',
+        width:"150px",
+        sortable: true,
+      },
+      {
+        name: 'Invoice Date',
+        selector: 'invoice_date',
+        sortable: true,
+        cell: (row) => {
+          if (row.invoice_date) {
+            const originalDate = row.invoice_date; // Assuming invoice_date is a string in the format 'YYYY-MM-DD HH:mm:ss'
+            const formattedDate = new Date(originalDate).toLocaleDateString('en-IN');
+            return formattedDate;
+          }
+          return ''; // Return empty string if neither invoice_date nor schedule_date exists
+        },
+      },    
+      {
+        name: 'Service Type',
+        selector: 'item_name',
+        width:"150px",
+        sortable: true,
+      },      
+      {
+        name: 'Status',
+        selector: 'payment_status',
+        sortable: true,
+        cell: (row) => {
+        if (row.payment_status) {
+            return   <span
+            className={`${row.payment_status === 'Cancelled'
+              ? 'px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-400 text-red-100'
+              : row.payment_status === 'Paid'
+                ? 'px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800'
+              : row.payment_status === 'Pending'
+                ? 'px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800'
+              : row.payment_status === 'Billed'
+                ? 'px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-sky-100 text-sky-800'
+                  : 'text-black' // Default color for other payment_status
+              }`}
+          >
+            {row.payment_status}
+          </span>
+          }
+        }
+      },
+      {
+        name: 'Amount',
+        selector: 'medical_equipment_amount',
+        sortable: true,
+        width:"250px",
+        cell: (row) => {
+          if (row.medical_equipment_amount) {
+            return ` ${new Intl.NumberFormat("en-IN", {
+          style: "currency",
+          currency: "INR",
+          maximumFractionDigits: 0
+        }).format(row.medical_equipment_amount)} (MEQ)`;
+          }
+         
+        },
+      },
+    ];
+    
+     // ----------------- TABLE 10 FIVE API MERGE DATA --------------------------// 
+  
+    const mergedData10 = [...Meqbranchdata];
+
+      // ----------------- TABLE 10 CSV EXPORT FUNCTION BRANCH WISE REVENUE DATA--------------------------// 
+   
+      const handleExportSelected10 = () => {
+        const selectedDataToExport10 = selectedRows10.map((row, index) => {
+          let amount = null;
+      
+          // Assigning the first non-null amount value found in the row
+          const amountKeys = ['medical_equipment_amount'];
+          for (const key of amountKeys) {
+            if (row[key]) {
+              amount = row[key];
+              break;
+            }
+          }
+      
+          if (amount !== null) {
+            amount = new Intl.NumberFormat('en-IN', {
+              style: 'currency',
+              currency: 'INR',
+              maximumFractionDigits: 0
+            }).format(amount);
+          }
+      
+          let invoice_date = null;
+         if (row.invoice_date) {
+            const originalDate = row.invoice_date; // Assuming invoice_date is a string in the format 'YYYY-MM-DD HH:mm:ss'
+            invoice_date = new Date(originalDate).toLocaleDateString('en-IN');
+          }
+      
+          let status = row.payment_status || null;
+      
+          let service_type =  row.item_name  || null;
+           global.branchName5 = row.branch_name
+          return {
+            Sno: mergedData10.indexOf(row) + 1,
+            'Branch Name': row.branch_name || '',
+            'Patient ID': row.patient_id || '',
+            'First Name': row.first_name || '',
+            'Last Name': row.last_name || '',
+            'Invoice Date': invoice_date || '',
+            'Status': status || '',
+            'Service Type': service_type || '',
+            'Amount': amount || '',
+          };
+        });
+      
+        selectedDataToExport10.sort((a, b) => a.Sno - b.Sno);
+      
+        return (
+          <CSVLink
+            data={selectedDataToExport10}
+            filename={`${global.branchName5}_MedicalEquipmentData.csv`} 
+            className="group [transform:translateZ(0)] px-3 py-2 rounded-lg overflow-hidden bg-gray-300 relative before:absolute before:bg-[#339966] before:top-1/2 before:left-1/2 before:h-2 before:w-9 before:-translate-y-1/2 before:-translate-x-1/2 before:rounded-sm  before:opacity-0 hover:before:scale-[5] hover:before:opacity-100 before:transition before:ease-in-out before:duration-500"
+          >
+            <span className="relative z-0 text-black transition duration-500 ease-in-out group-hover:text-gray-200">
+              Export Selected as CSV
+            </span>
+          </CSVLink>
+        );
+      };
+    // ----------------- TABLE 11 STATES --------------------------// 
+
+    const [currentPage11, setCurrentPage11] = useState(1); // pagination state
+    const [rowsPerPage11, setRowsPerPage11] = useState(10); // row control state
+    const [selectedRows11, setSelectedRows11] = useState([]);
+    
+       // ----------------- TABLE 11 SCOLUMN --------------------------// 
+    const combinedColumns11 = [
+      {
+        name: 'Sno',
+        cell: (row, rowIndex) => {
+          const index = mergedData11.indexOf(row) + 1;
+          return index;
+        },
+        sortable: true,
+        width: '70px',
+      },    
+      {
+        name: 'Branch Name',
+        selector: 'branch_name',
+        sortable: true,
+      },
+      {
+        name: 'Patient ID',
+        selector: 'patient_id',
+        sortable: true,
+      },
+      {
+        name: 'First Name',
+        selector: 'first_name',
+        width:"150px",
+        sortable: true,
+      },
+      {
+        name: 'Last Name',
+        selector: 'last_name',
+        width:"150px",
+        sortable: true,
+      },
+      {
+        name: 'Invoice Date',
+        selector: 'schedule_date',
+        sortable: true,
+        cell: (row) => {
+          if (row.schedule_date) {
+            const originalDate = row.schedule_date; // Assuming schedule_date is a string in the format 'YYYY-MM-DD HH:mm:ss'
+            const formattedDate = new Date(originalDate).toLocaleDateString('en-IN');
+            return formattedDate;
+          }
+          return ''; // Return empty string if neither invoice_date nor schedule_date exists
+        },
+      },    
+      {
+        name: 'Service Type',
+        selector: 'care_taken',
+        width:"150px",
+        sortable: true,
+      },      
+      {
+        name: 'Status',
+        selector: 'payment_status',
+        sortable: true,
+        cell: (row) => {
+        if (row.payment_status) {
+            return   <span
+            className={`${row.payment_status === 'Cancelled'
+              ? 'px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-400 text-red-100'
+              : row.payment_status === 'Paid'
+                ? 'px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800'
+              : row.payment_status === 'Pending'
+                ? 'px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800'
+              : row.payment_status === 'Billed'
+                ? 'px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-sky-100 text-sky-800'
+                  : 'text-black' // Default color for other payment_status
+              }`}
+          >
+            {row.payment_status}
+          </span>
+          }
+        }
+      },
+      {
+        name: 'Amount',
+        selector: 'emergency_care_amount',
+        sortable: true,
+        width:"250px",
+        cell: (row) => {
+          if (row.emergency_care_amount) {
+            return ` ${new Intl.NumberFormat("en-IN", {
+          style: "currency",
+          currency: "INR",
+          maximumFractionDigits: 0
+        }).format(row.emergency_care_amount)} (EC)`;
+          }
+       
+        },
+      },
+    ];
+    
+     // ----------------- TABLE 11 FIVE API MERGE DATA --------------------------// 
+  
+    const mergedData11 = [...Ecbranchdata];
+
+      // ----------------- TABLE 11 CSV EXPORT FUNCTION BRANCH WISE REVENUE DATA--------------------------// 
+   
+      const handleExportSelected11 = () => {
+        const selectedDataToExport11 = selectedRows11.map((row, index) => {
+          let amount = null;
+      
+          // Assigning the first non-null amount value found in the row
+          const amountKeys = ['emergency_care_amount'];
+          for (const key of amountKeys) {
+            if (row[key]) {
+              amount = row[key];
+              break;
+            }
+          }
+      
+          if (amount !== null) {
+            amount = new Intl.NumberFormat('en-IN', {
+              style: 'currency',
+              currency: 'INR',
+              maximumFractionDigits: 0
+            }).format(amount);
+          }
+      
+          let invoice_date = null;
+          if (row.schedule_date) {
+            const originalDate = row.schedule_date;
+            invoice_date = new Date(originalDate).toLocaleDateString('en-IN');
+          } 
+      
+          let status = row.payment_status || null;
+      
+          let service_type =  row.care_taken || null;
+           global.branchName6 = row.branch_name
+          return {
+            Sno: mergedData11.indexOf(row) +1,
+            'Branch Name': row.branch_name || '',
+            'Patient ID': row.patient_id || '',
+            'First Name': row.first_name || '',
+            'Last Name': row.last_name || '',
+            'Invoice Date': invoice_date || '',
+            'Status': status || '',
+            'Service Type': service_type || '',
+            'Amount': amount || '',
+          };
+        });
+      
+        selectedDataToExport11.sort((a, b) => a.Sno - b.Sno);
+      
+        return (
+          <CSVLink
+            data={selectedDataToExport11}
+            filename={`${global.branchName6}_EmergencyCareData.csv`} 
+            className="group [transform:translateZ(0)] px-3 py-2 rounded-lg overflow-hidden bg-gray-300 relative before:absolute before:bg-[#339966] before:top-1/2 before:left-1/2 before:h-2 before:w-9 before:-translate-y-1/2 before:-translate-x-1/2 before:rounded-sm  before:opacity-0 hover:before:scale-[5] hover:before:opacity-100 before:transition before:ease-in-out before:duration-500"
+          >
+            <span className="relative z-0 text-black transition duration-500 ease-in-out group-hover:text-gray-200">
+              Export Selected as CSV
+            </span>
+          </CSVLink>
+        );
+      };
+
+    // ----------------- TABLE 12 STATES --------------------------// 
+
+    const [currentPage12, setCurrentPage12] = useState(1); // pagination state
+    const [rowsPerPage12, setRowsPerPage12] = useState(10); // row control state
+    const [selectedRows12, setSelectedRows12] = useState([]);
+    
+       // ----------------- TABLE 12 SCOLUMN --------------------------// 
+    const combinedColumns12 = [
+      {
+        name: 'Sno',
+        cell: (row, rowIndex) => {
+          const index = mergedData12.indexOf(row) + 1;
+          return index;
+        },
+        sortable: true,
+        width: '70px',
+      },    
+      {
+        name: 'Branch Name',
+        selector: 'branch_name',
+        sortable: true,
+      },
+      {
+        name: 'Patient ID',
+        selector: 'patient_id',
+        sortable: true,
+      },
+      {
+        name: 'First Name',
+        selector: 'first_name',
+        width:"150px",
+        sortable: true,
+      },
+      {
+        name: 'Last Name',
+        selector: 'last_name',
+        width:"150px",
+        sortable: true,
+      },
+      {
+        name: 'Invoice Date',
+        selector: 'invoice_date',
+        sortable: true,
+        cell: (row) => {
+          if (row.invoice_date) {
+            const originalDate = row.invoice_date; // Assuming invoice_date is a string in the format 'YYYY-MM-DD HH:mm:ss'
+            const formattedDate = new Date(originalDate).toLocaleDateString('en-IN');
+            return formattedDate;
+          } 
+          return ''; // Return empty string if neither invoice_date nor schedule_date exists
+        },
+      },    
+      {
+        name: 'Service Type',
+        selector: 'item_name',
+        width:"150px",
+        sortable: true,
+      },      
+      {
+        name: 'Status',
+        selector: 'invoice_status',
+        sortable: true,
+        cell: (row) => {
+        if (row.invoice_status) {
             return  <span
             className={`${row.invoice_status === 'Pending'
                 ? 'px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800'
@@ -2500,49 +3150,7 @@ const handleDataPointClick = async (branchID) => {
         sortable: true,
         width:"250px",
         cell: (row) => {
-          if (row.fb_amount) {
-            return ` ${ new Intl.NumberFormat("en-IN", {
-          style: "currency",
-          currency: "INR",
-          maximumFractionDigits: 0
-        }).format(row.fb_amount)} (FB)`;
-          }
-          else if (row.procedure_service_amount) {
-            return ` ${new Intl.NumberFormat("en-IN", {
-          style: "currency",
-          currency: "INR",
-          maximumFractionDigits: 0
-        }).format(row.procedure_service_amount)} (PS)`;
-          }
-          else if (row.extra_service_amount) {
-            return ` ${new Intl.NumberFormat("en-IN", {
-          style: "currency",
-          currency: "INR",
-          maximumFractionDigits: 0
-        }).format(row.extra_service_amount)} (SES)`;
-          }
-          else if (row.medical_equipment_amount) {
-            return ` ${new Intl.NumberFormat("en-IN", {
-          style: "currency",
-          currency: "INR",
-          maximumFractionDigits: 0
-        }).format(row.medical_equipment_amount)} (MEQ)`;
-          }
-          else if (row.total_amount) {
-            return ` ${new Intl.NumberFormat("en-IN", {
-          style: "currency",
-          currency: "INR",
-          maximumFractionDigits: 0
-        }).format(row.total_amount)} (Bill Invoice)`;
-          }
-          else if (row.emergency_care_amount) {
-            return ` ${new Intl.NumberFormat("en-IN", {
-          style: "currency",
-          currency: "INR",
-          maximumFractionDigits: 0
-        }).format(row.emergency_care_amount)} (EC)`;
-          }
-          else if (row.personal_care_amount) {
+        if (row.personal_care_amount) {
             return ` ${new Intl.NumberFormat("en-IN", {
           style: "currency",
           currency: "INR",
@@ -2553,9 +3161,70 @@ const handleDataPointClick = async (branchID) => {
       },
     ];
     
-     // ----------------- TABLE 9 FIVE API MERGE DATA --------------------------// 
+     // ----------------- TABLE 12 FIVE API MERGE DATA --------------------------// 
   
-    const mergedData9 = [...BIbranchdata];
+    const mergedData12 = [...Pcbranchdata];
+
+      // ----------------- TABLE 12 CSV EXPORT FUNCTION BRANCH WISE REVENUE DATA--------------------------// 
+   
+      const handleExportSelected12 = () => {
+        const selectedDataToExport12 = selectedRows12.map((row, index) => {
+          let amount = null;
+      
+          // Assigning the first non-null amount value found in the row
+          const amountKeys = ['personal_care_amount'];
+          for (const key of amountKeys) {
+            if (row[key]) {
+              amount = row[key];
+              break;
+            }
+          }
+      
+          if (amount !== null) {
+            amount = new Intl.NumberFormat('en-IN', {
+              style: 'currency',
+              currency: 'INR',
+              maximumFractionDigits: 0
+            }).format(amount);
+          }
+      
+          let invoice_date = null;
+         if (row.invoice_date) {
+            const originalDate = row.invoice_date; // Assuming invoice_date is a string in the format 'YYYY-MM-DD HH:mm:ss'
+            invoice_date = new Date(originalDate).toLocaleDateString('en-IN');
+          }
+      
+          let status =  row.invoice_status || null;
+      
+          let service_type = row.item_name  || null;
+           global.branchName7 = row.branch_name
+          return {
+            Sno: mergedData12.indexOf(row) + 1,
+            'Branch Name': row.branch_name || '',
+            'Patient ID': row.patient_id || '',
+            'First Name': row.first_name || '',
+            'Last Name': row.last_name || '',
+            'Invoice Date': invoice_date || '',
+            'Status': status || '',
+            'Service Type': service_type || '',
+            'Amount': amount || '',
+          };
+        });
+      
+        selectedDataToExport12.sort((a, b) => a.Sno - b.Sno);
+      
+        return (
+          <CSVLink
+            data={selectedDataToExport12}
+            filename={`${global.branchName7}_PersonalCareData.csv`} 
+            className="group [transform:translateZ(0)] px-3 py-2 rounded-lg overflow-hidden bg-gray-300 relative before:absolute before:bg-[#339966] before:top-1/2 before:left-1/2 before:h-2 before:w-9 before:-translate-y-1/2 before:-translate-x-1/2 before:rounded-sm  before:opacity-0 hover:before:scale-[5] hover:before:opacity-100 before:transition before:ease-in-out before:duration-500"
+          >
+            <span className="relative z-0 text-black transition duration-500 ease-in-out group-hover:text-gray-200">
+              Export Selected as CSV
+            </span>
+          </CSVLink>
+        );
+      };
 
   // ----------------- table header and body color --------------------------// 
     const tableCustomStyles = {
@@ -2624,6 +3293,12 @@ const handleDataPointClick = async (branchID) => {
       tableContent = generateDataTable(combinedColumns8, mergedData8, currentPage8, setCurrentPage8, rowsPerPage8, setRowsPerPage8, selectedRows8, setSelectedRows8);
     }else if (selecttype === 'BIBranchData') {
       tableContent = generateDataTable(combinedColumns9, mergedData9, currentPage9, setCurrentPage9, rowsPerPage9, setRowsPerPage9, selectedRows9, setSelectedRows9);
+    }else if (selecttype === 'MeqBranchData') {
+      tableContent = generateDataTable(combinedColumns10, mergedData10, currentPage10, setCurrentPage10, rowsPerPage10, setRowsPerPage10, selectedRows10, setSelectedRows10);
+    }else if (selecttype === 'EcBranchData') {
+      tableContent = generateDataTable(combinedColumns11, mergedData11, currentPage11, setCurrentPage11, rowsPerPage11, setRowsPerPage11, selectedRows11, setSelectedRows11);
+    }else if (selecttype === 'PcqBranchData') {
+      tableContent = generateDataTable(combinedColumns12, mergedData12, currentPage12, setCurrentPage12, rowsPerPage12, setRowsPerPage12, selectedRows12, setSelectedRows12);
     }
    
     
@@ -2761,11 +3436,11 @@ const handleDataPointClick = async (branchID) => {
           <div className="px-4 md:px-6 mx-auto w-full">
              <div>
                 <div className="flex flex-wrap">
-                   <div className="w-full lg:w-6/12 xl:w-3/12 px-4">
+                   <div className="w-full lg:w-6/12 xl:w-3/12 px-2">
                       <div className="relative flex flex-col min-w-0 break-words bg-white rounded-lg mb-6 xl:mb-0 shadow-lg">
                          <div onClick={fetchDataBasedOnFilter} className="flex-auto p-4 hover:cursor-pointer">
                             <div className="flex flex-wrap">
-                               <div className="relative w-full pr-4 max-w-full flex-grow flex-1">
+                               <div className="relative w-full  max-w-full flex-grow flex-1">
                                <h5 className="text-blueGray-400 uppercase font-bold text-xs">Revenue Generated</h5>
                                <span className="block text-2xl font-bold">
                           {isLoading ? (
@@ -2785,11 +3460,11 @@ const handleDataPointClick = async (branchID) => {
                          </div>
                       </div>
                    </div>
-                   <div class="w-full lg:w-6/12 xl:w-3/12 px-4">
+                   <div class="w-full lg:w-6/12 xl:w-3/12 px-2">
                       <div class="relative flex flex-col min-w-0 break-words bg-white rounded-lg mb-6 xl:mb-0 shadow-lg">
                          <div onClick={consolidatedBill} class="flex-auto p-4 hover:cursor-pointer">
                             <div class="flex flex-wrap">
-                               <div class="relative w-full pr-4 max-w-full flex-grow flex-1">
+                               <div class="relative w-full  max-w-full flex-grow flex-1">
                                   <h5 class="text-blueGray-400 uppercase font-bold text-xs">Invoice Generated</h5>
 
                                     <span class="block text-2xl font-bold"> {isLoading ? (
@@ -2807,12 +3482,12 @@ const handleDataPointClick = async (branchID) => {
                          </div>
                       </div>
              </div>
-             <div class="w-full lg:w-6/12 xl:w-3/12 px-4">
+             <div class="w-full lg:w-6/12 xl:w-3/12 px-2">
                       <div class="relative flex flex-col min-w-0 break-words bg-white rounded-lg mb-6 xl:mb-0 shadow-lg">
                       
                          <div  onClick={invoicePending} class="flex-auto p-4 hover:cursor-pointer">
                             <div class="flex flex-wrap">
-                               <div class="relative w-full pr-4 max-w-full flex-grow flex-1">
+                               <div class="relative w-full  max-w-full flex-grow flex-1">
                                   <h5 class="text-blueGray-400 uppercase font-bold text-xs">Invoice  Remaining</h5>
                                   <span class="block text-2xl font-bold"> {isLoading ? (
                                     // Loading animation or placeholder
@@ -2840,11 +3515,11 @@ const handleDataPointClick = async (branchID) => {
                          </div>
                       </div>
                    </div>
-             <div class="w-full lg:w-6/12 xl:w-3/12 px-4">
+             <div class="w-full lg:w-6/12 xl:w-3/12 px-2">
                       <div class="relative flex flex-col min-w-0 break-words bg-white rounded-lg mb-6 xl:mb-0 shadow-lg">
                          <div onClick={invoiceReciept} class="flex-auto p-4 hover:cursor-pointer">
                             <div class="flex flex-wrap">
-                               <div class="relative w-full pr-4 max-w-full flex-grow flex-1">
+                               <div class="relative w-full  max-w-full flex-grow flex-1">
                                   <h5 class="text-blueGray-400 uppercase font-bold text-xs">Receipt Generated</h5>
                                   <span class="block text-2xl font-bold"> {isLoading ? (
                                     // Loading animation or placeholder
@@ -2866,29 +3541,36 @@ const handleDataPointClick = async (branchID) => {
              </div>
           </div>
        </div>
-       <div style={{ display: 'flex' }}>
-      <div style={{ flex: 1 }}>
+       <div style={{ display: 'flex',gap: 2}}>
+      <div style={{ flex: 1,boxShadow: '0 4px 8px 0 rgba(0, 0, 0, 0.2)'}}>
         <div >
           <div id="chartContainer">
             {/* Your first chart component here */}
           </div>
         </div>
       </div>
-      <div style={{ flex: 1 }}>
+      <div style={{ flex: 1,boxShadow: '0 4px 8px 0 rgba(0, 0, 0, 0.2)'}}>
         <div>
           {/* Your second chart component here */}
           <CanvasJSChart options={options} />
         </div>
       </div>
     </div>
-
-    <div className='w-50'>
+    <div className='w-50 mt-4'>
   {selectedRows1.length > 0 && handleExportSelected1()}
   {selectedRows2.length > 0 && handleExportSelected2()}
   {selectedRows3.length > 0 && handleExportSelected3()}
   {selectedRows4.length > 0 && handleExportSelected4()}
+  {selectedRows5.length > 0 && handleExportSelected5()}
+  {selectedRows6.length > 0 && handleExportSelected6()}
+  {selectedRows7.length > 0 && handleExportSelected7()}
+  {selectedRows8.length > 0 && handleExportSelected8()}
+  {selectedRows9.length > 0 && handleExportSelected9()}
+  {selectedRows10.length > 0 && handleExportSelected10()}
+  {selectedRows11.length > 0 && handleExportSelected11()}
+  {selectedRows12.length > 0 && handleExportSelected12()}
 </div>
-    <div className="grid mt-8 mb-20 bg-white border-solid shadow-sm col-1 border-1 border-white-500">
+    <div className="grid mt-4 mb-20 bg-white border-solid shadow-sm col-1 border-1 border-white-500">
 
 <div className="relative overflow-x-auto bg-white border-2 border-solid rounded shadow-md sm:rounded-lg">
 
