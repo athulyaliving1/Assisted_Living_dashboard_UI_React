@@ -1123,7 +1123,7 @@ const handleDataPointClick = async (branchID) => {
           return CanvasJS.formatNumber(e.value);
         }
   
-        var suffixes = ["", "K", "M", "B"];
+        var suffixes = ["", "K", "L", "C"];
         var order = Math.max(Math.floor(Math.log10(Math.abs(e.value)) / 3), 0);
         if (order > suffixes.length - 1) order = suffixes.length - 1;
         var suffix = suffixes[order];
